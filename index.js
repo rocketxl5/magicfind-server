@@ -17,7 +17,7 @@ connectDB();
 // }
 // console.log(process.env.NODE_ENV);
 
-app.use(cors({ origin: 'https://magicfind.onrender.com', credentials: true }));
+app.use(cors({ origin: '*', credentials: true }));
 
 app.use(express.json());
 
