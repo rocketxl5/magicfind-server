@@ -7,16 +7,6 @@ const cors = require('cors');
 const PORT = process.env.PORT || 5000;
 connectDB();
 
-// Express built-in json parser middleware
-// Other option is installing body parser module middleware
-// if (!process.env.NODE_ENV === 'production') {
-//   app.use(express.static(path.join(__dirname, 'client/build')));
-//   app.get('*', (req, res) => {
-//     res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
-//   });
-// }
-// console.log(process.env.NODE_ENV);
-
 app.use(cors({ origin: '*', credentials: true }));
 
 app.use(express.json());
