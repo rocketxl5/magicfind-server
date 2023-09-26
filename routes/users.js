@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const User = require('../models/User_old')
+const User = require('../models/User')
 const { body, validationResult } = require('express-validator');
 
 ////////////////////////////
@@ -25,7 +25,7 @@ router.post('/login',
     body('email').not().isEmpty(),
     body('password').isLength({ min: 3 }),
     async (req, res) => {
-
+        console.log('new')
         const errors = validationResult(req);
 
         if (!errors.isEmpty()) {
@@ -75,6 +75,7 @@ router.post('/login',
                         throw new Error(error)
                     }
 
+                    console.log({ token, user })
                     res.status(200).json({ token, user })
                 }
             )
