@@ -8,7 +8,7 @@ const auth = require('../middleware/authorization');
 
 const Cart = require('../models/Cart');
 const Card = require('../models/Card');
-const User = require('../models/User');
+const User = require('../models/User_old');
 
 router.patch('/', auth, async (req, res) => {
   const { cartItems } = await req.body;
