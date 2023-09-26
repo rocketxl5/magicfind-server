@@ -7,7 +7,7 @@ const ObjectId = require('mongodb').ObjectId;
 const auth = require('../middleware/authorization');
 
 const Card = require('../models/Card');
-const User = require('../models/User_old');
+const User = require('../models/User');
 
 // Get Single Card By Name (Search user strore for single card)
 router.get('/:cardName/:userID', auth, async (req, res) => {
