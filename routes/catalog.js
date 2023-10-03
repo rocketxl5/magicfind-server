@@ -1,9 +1,11 @@
+const fs = require('fs');
+const axios = require('axios');
 require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 const ObjectId = require('mongodb').ObjectId;
 const Card = require('../models/Card');
-const fs = require('fs');
+const { handleFiles } = require('../helpers/handleFiles');
 
 router.get('/', async (req, res) => {
   try {
@@ -22,6 +24,18 @@ router.get('/', async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+// Get all english card names from Skryfall API
+router.get('/cardnames', async (req, res, next) => {
+  try {
+    const response = await axios.get('https://api.scryfall.com/catalog/card-names');
+    handleFiles(fs, './data', 'cardnames.json', JSON.stringify(response.data.data));
+    res.status(200).json(response.data.data);
+  } catch (error) {
+    throw new Error(error)
+  }
+})
+
 
 router.get('/:cardName', async (req, res) => {
   if (!req.params.cardName) {
