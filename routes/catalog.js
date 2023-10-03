@@ -29,16 +29,10 @@ router.get('/', async (req, res) => {
 router.get('/cardnames', async (req, res) => {
   try {
     const response = await axios.get('https://api.scryfall.com/catalog/card-names');
-    handleFiles(fs, './data', 'cardnames.json', JSON.stringify(response.data.data));
-    fs.readFile('./data/cardnames.json', 'utf8', (error, response) => {
-      if (error) {
-        throw new Error(error)
-      }
+    const data = response.data.data;
+    handleFiles(fs, './data', 'cardnames.json', JSON.stringify(data));
 
-      const data = JSON.parse(response)
-      console.log(data)
-      res.status(200).json(data);
-    });
+    res.status(200).json(data);
   } catch (error) {
     throw new Error(error)
   }
