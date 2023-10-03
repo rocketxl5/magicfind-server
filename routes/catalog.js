@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const ObjectId = require('mongodb').ObjectId;
 const Card = require('../models/Card');
+const fs = require('fs');
 
 router.get('/', async (req, res) => {
   try {
@@ -16,7 +17,6 @@ router.get('/', async (req, res) => {
     // const results = cards.filter((card) => {
     //   return card.name.toLowerCase() === cardName.toLowerCase();
     // });
-
     res.status(200).json({ data: cards });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -40,8 +40,8 @@ router.get('/:cardName', async (req, res) => {
     const results = cards.filter((card) => {
       return card.name.toLowerCase() === cardName.toLowerCase();
     });
-
-    res.status(200).json({ data: results });
+    console.log('default 2');
+    res.status(200).json({ data: results, message: '/cardname' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
