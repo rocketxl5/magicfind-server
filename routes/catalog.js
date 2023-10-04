@@ -5,21 +5,20 @@ const express = require('express');
 const router = express.Router();
 const ObjectId = require('mongodb').ObjectId;
 const Card = require('../models/Card');
-const { handleFiles, readFile } = require('../helpers/handleFiles');
+const { handleFiles } = require('../helpers/handleFiles');
 
+// Get all cards in site catalo i.e. all users cards
 router.get('/', async (req, res) => {
   try {
-    // let cards = await Card.findOne({ name: cardName });
 
     let cards = await Card.find();
 
     if (!cards) {
       return console.log('no results');
     }
-    // const results = cards.filter((card) => {
-    //   return card.name.toLowerCase() === cardName.toLowerCase();
-    // });
-    res.status(200).json({ data: cards });
+
+    handleFiles(fs, './data', 'cardcatalog.json', JSON.stringify(cards));
+    res.status(200).json(cards);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
