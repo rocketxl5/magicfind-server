@@ -11,13 +11,23 @@ const { handleFiles } = require('../helpers/handleFiles');
 router.get('/', async (req, res) => {
   try {
 
-    let cards = await Card.find();
+    // let cards = await Card.find();
+
+
+    // handleFiles(fs, './data', 'cardcatalog.json', JSON.stringify(cards));
+    let cards = [];
+    fs.readFile('../data/cardcatalog.json', 'utf8', (err, data) => {
+      if (err) {
+        throw new Error(err);
+      }
+
+      cards = JSON.parse(data);
+    })
 
     if (!cards) {
-      return console.log('no results');
+      throw new Error('No cards were found');
     }
 
-    handleFiles(fs, './data', 'cardcatalog.json', JSON.stringify(cards));
     res.status(200).json(cards);
   } catch (err) {
     res.status(500).json({ message: err.message });
