@@ -7,27 +7,29 @@ const ObjectId = require('mongodb').ObjectId;
 const Card = require('../models/Card');
 const { handleFiles } = require('../helpers/handleFiles');
 
-// Get all cards in site catalo i.e. all users cards
+// Get all cards in site catalog i.e. all users cards
 router.get('/', async (req, res) => {
   try {
 
     // let cards = await Card.find();
 
+    // if (!cards) {
+    //   return console.log('No cards were found');
+    // }
 
     // handleFiles(fs, './data', 'cardcatalog.json', JSON.stringify(cards));
+    // res.status(200).json(cards);
+
     let cards = [];
     fs.readFile('../data/cardcatalog.json', 'utf8', (err, data) => {
       if (err) {
         throw new Error(err);
       }
-
       cards = JSON.parse(data);
     })
-
     if (!cards) {
       throw new Error('No cards were found');
     }
-
     res.status(200).json(cards);
   } catch (err) {
     res.status(500).json({ message: err.message });
