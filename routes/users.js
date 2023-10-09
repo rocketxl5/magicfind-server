@@ -75,7 +75,6 @@ router.post('/login',
                         throw new Error(error)
                     }
 
-                    console.log({ token, user })
                     res.status(200).json({ token, user })
                 }
             )
