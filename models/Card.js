@@ -41,10 +41,6 @@ const cardSchema = new mongoose.Schema({
     type: String,
     default: 'en'
   },
-  negotiable: {
-    type: Boolean,
-    default: true
-  },
   foil: {
     type: Boolean,
     default: true
@@ -59,6 +55,15 @@ const cardSchema = new mongoose.Schema({
   },
   comment: {
     type: String,
+    default: ''
+  },
+  isPublished: {
+    type: Boolean,
+    required: true,
+    default: false
+  },
+  datePublished: {
+    type: Date,
     default: ''
   },
   userName: {

@@ -64,7 +64,7 @@ router.get('/:cardName', async (req, res) => {
     const results = cards.filter((card) => {
       return card.name.toLowerCase() === cardName.toLowerCase();
     });
-    console.log('default 2');
+    // console.log(cards);
     res.status(200).json({ data: results, message: '/cardname' });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -85,7 +85,9 @@ router.get('/:cardName/:cardID/:quantity', async (req, res) => {
       isQuantityAvailable = false;
     }
 
-    res.status(200).json({ data: { isQuantityAvailable, card } });
+    console.log(card)
+
+    res.status(200).json({ isQuantityAvailable, card });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
