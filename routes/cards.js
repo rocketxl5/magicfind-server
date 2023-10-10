@@ -101,7 +101,7 @@ router.post(
     }
 
     // Destructure request body
-    const {
+    let {
       skryfallID,
       name,
       type_line,
@@ -118,7 +118,9 @@ router.post(
       comment,
       userName,
       userCountry,
-      userID
+      userID,
+      isPublished,
+      datePublished
     } = await req.body;
 
     try {
@@ -140,15 +142,20 @@ router.post(
         comment,
         userName,
         userCountry,
-        userID
+        userID,
+        isPublished,
+        datePublished
       });
 
       if (!card) {
+        console.log('cant create new card')
         return res
           .status(400)
           .json({ msg: 'There was a problem. Card not added to collection' });
       }
-
+      console.log(card);
+      // userID = ObjectId(userID);
+      console.log(userID)
       // Add a card from current user cards object
       User.updateOne(
         { _id: userID },
@@ -166,14 +173,15 @@ router.post(
               frame: card.frame,
               condition: card.condition,
               language: card.language,
-              negotiable: card.negotiable,
               foil: card.foil,
               quantity: card.quantity,
               price: card.price,
               comment: card.comment,
+              isPublished: card.isPublished,
+              datePublished: card.datePublished,
+              user_id: userID,
               userName: userName,
               userCountry: userCountry,
-              user_id: userID
             }
           }
         },
@@ -182,7 +190,7 @@ router.post(
 
       await card.save();
 
-      res.send({ msg: 'In the target', data: req.body });
+      res.send({ message: 'Card successully added to your store', data: req.body });
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
@@ -191,7 +199,7 @@ router.post(
 
 // Modify card data from user store
 router.patch('/modify', auth, async (req, res) => {
-  const { cardID, condition, language, quantity, price, comment, userID } =
+  const { cardID, condition, language, quantity, price, comment, isPublished, datePublished, userID } =
     await req.body;
   // console.log(req.body);
   try {
@@ -206,7 +214,9 @@ router.patch('/modify', auth, async (req, res) => {
           'cards.$.language': language,
           'cards.$.quantity': quantity,
           'cards.$.price': price,
-          'cards.$.comment': comment
+          'cards.$.comment': comment,
+          'cards.$.isPublished': isPublished,
+          'cards.$.datePublished': datePublished
         }
       }
     );
@@ -223,11 +233,12 @@ router.patch('/modify', auth, async (req, res) => {
       },
       {
         $set: {
-          condition: condition,
-          language: language,
-          quantity: quantity,
-          price: price,
-          comment: comment
+          condition,
+          language,
+          quantity,
+          price,
+          comment,
+          isPublished
         }
       }
     );
