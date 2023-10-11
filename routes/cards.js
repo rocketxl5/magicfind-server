@@ -1,3 +1,5 @@
+const fs = require('fs');
+const fsPromises = require('fs/promises');
 require('dotenv').config();
 const express = require('express');
 const router = express.Router();
@@ -5,7 +7,7 @@ const { body, validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 const ObjectId = require('mongodb').ObjectId;
 const auth = require('../middleware/authorization');
-
+const { appendToFile } = require('../helpers/appendToFile');
 const Card = require('../models/Card');
 const User = require('../models/User');
 
@@ -188,11 +190,13 @@ router.post(
         () => console.log(`${name} successfully added to store`)
       );
 
+      appendToFile(fs, './data/cardcatalog.json', card, 'utf8');
+
       await card.save();
 
       res.send({ message: 'Card successully added to your store', data: req.body });
-    } catch (err) {
-      res.status(500).json({ message: err.message });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
   }
 );
