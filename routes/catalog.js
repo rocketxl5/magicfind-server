@@ -8,7 +8,7 @@ const ObjectId = require('mongodb').ObjectId;
 const Card = require('../models/Card');
 const { handleFiles } = require('../helpers/handleFiles');
 
-// Get all cards in site catalo i.e. all users cards
+// Get all cards in site catalog i.e. all users cards
 router.get('/', async (req, res) => {
   // try {
 
@@ -26,6 +26,7 @@ router.get('/', async (req, res) => {
   try {
     const result = await fsPromises.readFile('./data/cardcatalog.json', { encoding: 'utf8' });
     const data = JSON.parse(result);
+    console.log('parsing data and sending')
     res.status(200).json(data);
   } catch (error) {
     console.log('error')
