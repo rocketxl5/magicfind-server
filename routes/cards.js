@@ -36,7 +36,7 @@ router.get('/:cardName/:userID', auth, async (req, res) => {
       return res.status(400).json({ msg: 'Could not find card in store' });
     }
 
-    res.status(200).json({ data: result });
+    res.status(200).json(result);
     // let card = Card.find({ name: name });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -273,6 +273,8 @@ router.delete('/', auth, async (req, res) => {
         $pull: { cards: { _id: ObjectId(cardID) } }
       }
     );
+
+    deleteFromFile(fs, './data', 'cardcatalog.json', { cardID, userID }, 'utf8');
 
     const card = await Card.findOneAndDelete({ _id: cardID });
 
