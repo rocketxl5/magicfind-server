@@ -11,6 +11,18 @@ const { appendToFile } = require('../helpers/appendToFile');
 const Card = require('../models/Card');
 const User = require('../models/User');
 
+// Get Skryfall API card title from data/cardnames.json
+router.get('/api-card-titles', async (req, res) => {
+  try {
+    const result = await fsPromises.readFile('./data/cardnames.json', { encoding: 'utf8' });
+    const cardTitles = await JSON.parse(result);
+
+    res.status(200).json(cardTitles);
+  } catch (error) {
+    throw new Error('Cannot fetch card title from api cardnames file')
+  }
+})
+
 // Get Single Card By Name (Search user strore for single card)
 router.get('/:cardName/:userID', auth, async (req, res) => {
   if (req.params.cardName === '') {
@@ -19,8 +31,6 @@ router.get('/:cardName/:userID', auth, async (req, res) => {
 
   let { cardName, userID } = req.params;
 
-  // console.log('cardName', cardName);
-
   try {
     let user = await User.findOne({ _id: userID });
 
@@ -28,15 +38,15 @@ router.get('/:cardName/:userID', auth, async (req, res) => {
       return res.status(400).send('User does not exist');
     }
 
-    const result = user.cards.filter((card) => {
+    const results = user.cards.filter((card) => {
       return card.name.toLowerCase() === cardName.toLowerCase();
     });
 
-    if (!result) {
+    if (!results) {
       return res.status(400).json({ msg: 'Could not find card in store' });
     }
 
-    res.status(200).json(result);
+    res.status(200).json({ results, cardName });
     // let card = Card.find({ name: name });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -79,8 +89,10 @@ router.get('/:userID', auth, async (req, res) => {
     if (!user) {
       return res.status(400).json({ msg: 'User not found' });
     }
-    // console.log(user);
-    res.status(200).json({ data: user.cards });
+
+    const cards = user.cards;
+
+    res.status(200).json(cards);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

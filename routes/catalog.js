@@ -9,8 +9,8 @@ const ObjectId = require('mongodb').ObjectId;
 const Card = require('../models/Card');
 const { handleFiles } = require('../helpers/handleFiles');
 
-// Get data cards from data/cardcatalog.json file
-// Query sent from Autocomplete module @SearchCatalog @SearchStore 
+// Get cards from data/cardcatalog.json file
+// Query sent from Autocomplete module @SearchCatalog @SearchCollection 
 router.get('/', async (req, res) => {
   try {
     const result = await fsPromises.readFile('./data/cardcatalog.json', { encoding: 'utf8' });
