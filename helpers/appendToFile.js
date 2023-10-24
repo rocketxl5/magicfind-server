@@ -1,10 +1,10 @@
 const appendToFile = (fs, path, data, encode) => {
     try {
-        const result = fs.readFileSync(path, encode);
-        let resultJSON = JSON.parse(result);
-        resultJSON.push(data);
-        resultJSON = JSON.stringify(resultJSON);
-        fs.writeFileSync(path, resultJSON, encode);
+        const catalog = fs.readFileSync(path, encode);
+        let catalogJSON = JSON.parse(result);
+        catalogJSON.push(data);
+        catalogJSON = JSON.stringify(catalogJSON);
+        fs.writeFileSync(path, catalogJSON, encode);
     } catch (error) {
         throw new Error(error)
     }

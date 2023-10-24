@@ -4,29 +4,18 @@ const axios = require('axios');
 require('dotenv').config();
 const express = require('express');
 const router = express.Router();
+const jwt = require('jsonwebtoken');
 const ObjectId = require('mongodb').ObjectId;
 const Card = require('../models/Card');
 const { handleFiles } = require('../helpers/handleFiles');
 
-// Get all cards in site catalog i.e. all users cards
+// Get cards from data/cardcatalog.json file
+// Query sent from Autocomplete module @SearchCatalog @SearchCollection 
 router.get('/', async (req, res) => {
-  // try {
-
-  //   let cards = await Card.find();
-
-  //   if (!cards) {
-  //     return console.log('no results');
-  //   }
-
-  //   handleFiles(fs, './data', 'cardcatalog.json', JSON.stringify(cards));
-  //   res.status(200).json(cards);
-  // } catch (err) {
-  //   res.status(500).json({ message: err.message });
-  // }
   try {
     const result = await fsPromises.readFile('./data/cardcatalog.json', { encoding: 'utf8' });
     const data = JSON.parse(result);
-    console.log('parsing data and sending')
+
     res.status(200).json(data);
   } catch (error) {
     console.log('error')
@@ -47,26 +36,36 @@ router.get('/cardnames', async (req, res) => {
   }
 })
 
-
+// SearchCatalog request
+// Get all cards in Magic Find catalog where catalog card name === cardName
 router.get('/:cardName', async (req, res) => {
   if (!req.params.cardName) {
     return res.status(400).json({ msg: 'Field is empty' });
   }
 
-  let { cardName } = req.params;
+  let verifiedUserID = '';
+  let cards = {};
+  const { cardName } = req.params;
+  const token = req.headers.authorization;
 
-  console.log('cardName', cardName);
+  if (token) {
+    const verified = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    verifiedUserID = verified.user.id
+  }
 
   try {
     // let cards = await Card.findOne({ name: cardName });
+    if (!token) {
+      cards = await Card.find();
+    } else {
+      cards = await Card.find({ userID: { $ne: verifiedUserID } });
+    }
 
-    let cards = await Card.find();
-    // console.log(cards);
     const results = cards.filter((card) => {
       return card.name.toLowerCase() === cardName.toLowerCase();
     });
-    // console.log(cards);
-    res.status(200).json({ data: results, message: '/cardname' });
+
+    res.status(200).json({ results, cardName });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
