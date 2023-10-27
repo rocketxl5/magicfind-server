@@ -1,19 +1,32 @@
 const mongoose = require('mongoose');
 
 const cardSchema = new mongoose.Schema({
-  skryfallID: {
+  id: {
     type: String,
+    required: true
+  },
+  artist: {
+    type: String,
+    default: ''
+  },
+  color: {
+    type: Array,
+    default: [],
+    required: true
+  },
+  finish: {
+    type: String,
+    default: ''
+  },
+  frame: {
+    type: String,
+    default: ''
+  },
+  image_uris: {
+    type: Object,
     required: true
   },
   name: {
-    type: String,
-    required: true
-  },
-  type_line: {
-    type: String,
-    required: true
-  },
-  set_name: {
     type: String,
     required: true
   },
@@ -21,17 +34,17 @@ const cardSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  image_uris: {
-    type: Object,
+  released: {
+    type: String,
     required: true
   },
-  artist: {
+  set_name: {
     type: String,
-    default: ''
+    required: true
   },
-  frame: {
+  type_line: {
     type: String,
-    default: ''
+    required: true
   },
   condition: {
     type: String,
@@ -40,10 +53,6 @@ const cardSchema = new mongoose.Schema({
   language: {
     type: String,
     default: 'en'
-  },
-  foil: {
-    type: Boolean,
-    default: true
   },
   quantity: {
     type: Number,
@@ -66,6 +75,11 @@ const cardSchema = new mongoose.Schema({
     type: Date,
     default: ''
   },
+  userID: {
+    type: String,
+    required: true,
+    default: ''
+  },
   userName: {
     type: String,
     default: ''
@@ -74,11 +88,6 @@ const cardSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  userID: {
-    type: String,
-    required: true,
-    default: ''
-  }
 });
 
 module.exports = mongoose.model('Card', cardSchema);
