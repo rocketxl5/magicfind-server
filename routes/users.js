@@ -88,28 +88,28 @@ router.post('/login',
 ////////////////////////////
 router.post('/signup', async (req, res) => {
 
+
+    const { name, email, country, password } = await req.body
+    console.log(name, email, country, password)
     const messages = {
-        success: `Congratulations ${username}! Your new Reach account was successfully created.`,
+        success: `Congratulations ${name}! Your new Magic Find account was successfully created.`,
         error: {
-            username: 'Username is already taken',
+            name: 'Username is already taken',
             email: 'Email is already taken',
             password: 'Please provide a password',
             country: 'Please select a country'
         }
     }
 
-    const { name, email, country, password } = await req.body
-
-
 
     try {
         // Check if name is available
         const userName = await User.findOne({ name })
-
+        console.log(userName)
         // Throw error if name exist
         if (userName) {
             // throw new Error(messages.error.username)
-            return res.status(400).json(messages.error.username)
+            return res.status(400).json(messages.error.name)
         }
 
         // Check if email is available
@@ -135,7 +135,7 @@ router.post('/signup', async (req, res) => {
 
             await newUser.save()
 
-            res.status(200).json(messages.success)
+            res.status(200).json({ message: messages.success })
         } else {
 
             const message = !password ? messages.error.password : messages.error.country
