@@ -36,9 +36,16 @@ router.post('/login',
         const { email, password } = await req.body;
 
         const messages = {
-            error: {
-                input: 'Please provide a valid email address and password.',
-                server: 'Something went wrong server side'
+            invalid: {
+                type: 'error',
+                title: `Connexion failed`,
+                body: 'The email or password you provided is invalid. Please try again.'
+            },
+            server: {
+                type: 'error',
+                title: 'Server issue',
+                input: 'Server cannot process your request',
+
             }
         }
 
@@ -46,14 +53,14 @@ router.post('/login',
             const user = await User.findOne({ email })
 
             if (!user) {
-                return res.status(400).json(messages.error.input)
+                return res.status(400).json(messages.invalid)
             }
 
             try {
                 const isMatch = await bcrypt.compare(password, user.password)
 
                 if (!isMatch) {
-                    return res.status(400).json(messages.error.input)
+                    return res.status(400).json(messages.invalid)
                 }
 
             } catch (error) {
@@ -92,7 +99,10 @@ router.post('/signup', async (req, res) => {
     const { name, email, country, password } = await req.body
     console.log(name, email, country, password)
     const messages = {
-        success: `Congratulations ${name}! Your new Magic Find account was successfully created.`,
+        success: {
+            title: `Congratulations ${name}!`,
+            body: 'Your new Magic Find account was successfully created.'
+        },
         error: {
             name: 'Username is already taken',
             email: 'Email is already taken',
@@ -105,13 +115,14 @@ router.post('/signup', async (req, res) => {
     try {
         // Check if name is available
         const userName = await User.findOne({ name })
-        console.log(userName)
+
         // Throw error if name exist
         if (userName) {
             // throw new Error(messages.error.username)
             return res.status(400).json(messages.error.name)
         }
 
+        console.log(userName)
         // Check if email is available
         const userEmail = await User.findOne({ email })
 
