@@ -36,7 +36,7 @@ router.post('/login',
         const { email, password } = await req.body;
 
         const messages = {
-            invalid: {
+            failed: {
                 type: 'error',
                 title: `Connexion failed`,
                 body: 'The email or password you provided is invalid. Please try again.'
@@ -53,14 +53,14 @@ router.post('/login',
             const user = await User.findOne({ email })
 
             if (!user) {
-                return res.status(400).json(messages.invalid)
+                return res.status(400).json(messages.failed)
             }
 
             try {
                 const isMatch = await bcrypt.compare(password, user.password)
 
                 if (!isMatch) {
-                    return res.status(400).json(messages.invalid)
+                    return res.status(400).json(messages.failed)
                 }
 
             } catch (error) {
@@ -97,11 +97,12 @@ router.post('/signup', async (req, res) => {
 
 
     const { name, email, country, password } = await req.body
-    console.log(name, email, country, password)
     const messages = {
         success: {
-            title: `Congratulations ${name}!`,
-            body: 'Your new Magic Find account was successfully created.'
+            type: 'success',
+            name: `${name}`,
+            title: 'Congratulations',
+            body: 'Your Magic Find account was successfully created. Log in to start building your store and card collection.'
         },
         error: {
             name: 'Username is already taken',
@@ -122,7 +123,6 @@ router.post('/signup', async (req, res) => {
             return res.status(400).json(messages.error.name)
         }
 
-        console.log(userName)
         // Check if email is available
         const userEmail = await User.findOne({ email })
 
