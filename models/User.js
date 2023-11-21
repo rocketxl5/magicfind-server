@@ -24,9 +24,11 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     cards: {
-        type: Array,
-        required: true,
-        default: []
+        type: Object,
+        default: {
+            published: { type: Array },
+            unpublished: { type: Array }
+        }
     },
     messages: {
         type: Object,
