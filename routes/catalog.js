@@ -23,19 +23,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get all english card names from Skryfall API
-router.get('/cardnames', async (req, res) => {
-  try {
-    const response = await axios.get('https://api.scryfall.com/catalog/card-names');
-    const data = response.data.data;
-    handleFiles(fs, './data', 'cardnames.json', JSON.stringify(data));
-
-    res.status(200).json(data);
-  } catch (error) {
-    throw new Error(error)
-  }
-})
-
 // SearchCatalog request
 // Get all cards in Magic Find catalog where catalog card name === cardName
 router.get('/:cardName', async (req, res) => {

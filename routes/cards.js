@@ -2,19 +2,42 @@ const fs = require('fs');
 const fsPromises = require('fs/promises');
 require('dotenv').config();
 const express = require('express');
+const axios = require('axios');
 const router = express.Router();
 const auth = require('../middleware/authorization');
 const Card = require('../models/Card');
 const User = require('../models/User');
 const ObjectId = require('mongodb').ObjectId;
 const { appendToFile } = require('../helpers/appendToFile');
+const { handleFiles } = require('../helpers/handleFiles');
 const cardProps = require('../data/cardProps');
 
+// Get all english card names from Skryfall API
+router.get('/cardnames', async (req, res) => {
+  try {
+    const response = await axios.get('https://api.scryfall.com/catalog/card-names');
+    const cardnames = response.data.data;
+
+    const filteredCardnames = cardnames.filter(cardname => {
+      return !/^[A\-]+/.test(cardname)
+    })
+
+    console.log(filteredCardnames)
+
+    handleFiles(fs, './data', 'cardnames.json', JSON.stringify(filteredCardnames));
+
+    res.status(200).json(filteredCardnames);
+  } catch (error) {
+    throw new Error(error)
+  }
+})
+
 // Get Skryfall API card title from data/cardnames.json
-router.get('/api-card-titles', async (req, res) => {
+router.get('/api-cardnames', async (req, res) => {
   try {
     const result = await fsPromises.readFile('./data/cardnames.json', { encoding: 'utf8' });
     const cardNames = await JSON.parse(result);
+
 
     res.status(200).json(cardNames);
   } catch (error) {
