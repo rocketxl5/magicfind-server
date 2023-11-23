@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const wokeDyno = require('woke-dyno');
 const connectDB = require('./config/db');
 const app = express();
 const cors = require('cors');
@@ -8,7 +9,11 @@ connectDB();
 
 app.use(cors({ origin: '*', credentials: true }));
 
+const SELF_URL = 'https://magicfind-server.onrender.com/';
+
 app.use(express.json());
+
+const dynoWaker = wokeDyno(SELF_URL);
 
 /////////////////////////
 // Request to Homepage //
@@ -34,4 +39,7 @@ app.use('/api/messages', messagesRouter);
 app.use('/api/catalog', catalogRouter);
 app.use('/api/cart', cartRouter);
 
-app.listen(PORT, () => console.log(`Server started on port: ${PORT}`));
+app.listen(PORT, () => {
+    dynoWaker.start();
+    console.log(`Server started on port: ${PORT}`)
+});

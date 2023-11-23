@@ -2128,7 +2128,7 @@ node-addon-api@^5.0.0:
   resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-5.1.0.tgz#49da1ca055e109a23d537e9de43c09cca21eb762"
   integrity sha512-eh0GgfEkpnoWDq+VY8OyvYhFEzBk6jIYbRKdIlyTiAXIVJ8PyBaKb0rp7oDtoddbdoHWhq8wwr+XZ81F1rpNdA==
 
-node-fetch@^2.6.7:
+node-fetch@^2.6.0, node-fetch@^2.6.7:
   version "2.7.0"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.7.0.tgz#d0f0fa6e3e2dc1d27efcd8ad99d550bda94d187d"
   integrity sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==
@@ -2833,6 +2833,13 @@ widest-line@^3.1.0:
   integrity sha512-NsmoXalsWVDMGupxZ5R08ka9flZjjiLvHVAWYOKtiKM8ujtZWr9cRffak+uSE48+Ob8ObalXpwyeUiyDD6QFgg==
   dependencies:
     string-width "^4.0.0"
+
+woke-dyno@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/woke-dyno/-/woke-dyno-1.0.0.tgz#13a4dd0dcd8582f953e22c5c6d17fe0f78109a08"
+  integrity sha512-jxio4fKoGp+66Ymbxt6CnuOXBmKlel0V1nr/NhQSxY7cEN+N4KPR4ZC1QVAUYjY7KdwGTOt3LcMgkEPkQtvwJg==
+  dependencies:
+    node-fetch "^2.6.0"
 
 wrap-ansi@^7.0.0:
   version "7.0.0"

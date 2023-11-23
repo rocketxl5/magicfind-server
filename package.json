@@ -21,7 +21,8 @@
     "mongodb": "^4.17.0",
     "mongoose": "^6.0.12",
     "request": "^2.88.2",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "woke-dyno": "^1.0.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.14"
