@@ -19,7 +19,7 @@ router.get('/cardnames', async (req, res) => {
     const cardnames = response.data.data;
 
     const filteredCardnames = cardnames.filter(cardname => {
-      return !/^[A\-]+/.test(cardname)
+      return /^(?!A-).*$/.test(cardname)
     })
 
     console.log(filteredCardnames)
