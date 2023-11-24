@@ -131,16 +131,8 @@ router.post(
     const { cardID, userID } = await req.params;
     const selectedCard = await req.body;
 
-    // console.log('cardid', cardID)
-    // console.log('userid', userID)
-
     let newCard = {};
 
-  //  for(const prop in selectedCard) {
-  //   if(cardProps.includes(prop.toString())) {
-  //     card = {...card, [prop]: selectedCard[prop]}
-  //   }
-    //  } 
     try {
       const card = await Card.findOne({ id: selectedCard.id });
       // console.log(card)
@@ -199,73 +191,6 @@ router.post(
       res.send(error)
     }
 
-    // try {
-
-    //   const user = await User.findOne({ _id: userID });
-
-    //   if (!user) {
-    //     return res.status(400).send('No corresponding user found');
-    //   }
-
-
-
-
-    // userID = ObjectId(userID);
-    // console.log(userID)
-    //   // Add newCard from current user cards object
-    //   User.updateOne(
-    //     { _id: userID },
-    //     {
-    //       $push: {
-    //         cards: { ...newCard }
-    //       }
-    //     },
-    //     () => console.log(`${name} successfully added to store`)
-    //   );
-
-    //   appendToFile(fs, './data/cardcatalog.json', newCard, 'utf8');
-
-    //   await newCard.save();
-
-    // res.send({ message: 'Card successully added to your store', data: req.body });
-    // res.send({ data: cards });
-
-
-    // } catch(error) {
-      
-    //   res.send(error);
-    // }
-
-    // res.send({user: userID, card: cardID})
-    // let { card, userID } = await req.body;
-    // console.log(selectedCards)
-    // Destructure request body
-    // const {
-    //   userID,
-    //   id,
-    //   artist,
-    //   booster,
-    //   colors,
-    //   finish,
-    //   frame,
-    //   image_uris,
-    //   lang,
-    //   legalities,
-    //   mana_cost,
-    //   name,
-    //   oversized,
-    //   prices,
-    //   rarity,
-    //   released,
-    //   set_name,
-    //   type_line,
-    // } = await req.body;
-
-    // console.log(card)
-
-
-    // console.log(cards)
-    // console.log(userID)
 
     // const newProps = [
     //   'asking_price',
@@ -279,109 +204,7 @@ router.post(
     //   'userCountry',
     // ];
 
-    // newProps.forEach(prop => {
-    //   card = { ...card, [prop[index]]: prop }
-    // })
 
-    // console.log(card)
-
-    // try {
-
-      
-      // const filterSelectedCards = (
-      //   await Promise.all(
-      //     cards.map(async (card) => {
-      //       const cardExist = await !Card.findOne({
-      //         id: card.id
-      //       }).catch((error) => console.log(error.message))
-      //       if (!cardExist) {
-      //         return card;
-      //       }
-      //     })
-      //   )
-      // )
-
-      // if (!filterSelectedCards.length) {
-      //   return res.status(400).json({ message: 'The cards you selected are already in your collection' })
-      // }
-      // console.log(cards)
-      // const newCards = await new Card.insertMany(cards)
-
-      // if (!newCards) {
-      //   return res.status(400).json({ message: 'Something happen. Cards were not added to your collection' });
-      // } 
-
-
-
-      // await newCard.save();
-
-      // console.log(filterSelectedCards)
-      // res.send({ data: newCard });
-
-    // } catch (error) {
-    //   res.send(error.message);
-    // }
-
-    // Card.insertMany
-    // Create a new card
-    // const newCard = await new Card({
-    //   id,
-    //   artist,
-    //   booster,
-    //   colors,
-    //   finish,
-    //   frame,
-    //   image_uris,
-    //   lang,
-    //   legalities,
-    //   mana_cost,
-    //   name,
-    //   oversized,
-    //   prices,
-    //   rarity,
-    //   released,
-    //   set_name,
-    //   type_line,
-    //   asking_price,
-    //   condition,
-    //   comment,
-    //   isPublished,
-    //   datePublished,
-    //   quantity,
-    //   userID,
-    //   userName,
-    //   userCountry,
-    // });
-
-    //   if (!newCard) {
-    //     console.log('cant create new card')
-    //     return res
-    //       .status(400)
-    //       .json({ msg: 'There was a problem. Card not added to collection' });
-    //   }
-    //   console.log(newCard);
-    // userID = ObjectId(userID);
-    // console.log(userID)
-    //   // Add newCard from current user cards object
-    //   User.updateOne(
-    //     { _id: userID },
-    //     {
-    //       $push: {
-    //         cards: { ...newCard }
-    //       }
-    //     },
-    //     () => console.log(`${name} successfully added to store`)
-    //   );
-
-    //   appendToFile(fs, './data/cardcatalog.json', newCard, 'utf8');
-
-    //   await newCard.save();
-
-    // res.send({ message: 'Card successully added to your store', data: req.body });
-    // res.send({ data: cards });
-    // } catch (error) {
-    //   res.status(500).json({ message: error.message });
-    // }
   }
 );
 
