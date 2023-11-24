@@ -134,43 +134,107 @@ router.post(
     // console.log('cardid', cardID)
     // console.log('userid', userID)
 
-   let card = {}
+    let newCard = {};
 
   //  for(const prop in selectedCard) {
   //   if(cardProps.includes(prop.toString())) {
   //     card = {...card, [prop]: selectedCard[prop]}
   //   }
-  //  } 
-
+    //  } 
     try {
-
-      const user = await User.findOne({ _id: userID });
-
-      if(!user) {
-        return res.status(400).send('No corresponding user found');
-      }
-
-      const newCard = await new Card(selectedCard);
-
-      if (!newCard) {
-        console.log('cant create new card')
-        return res
-          .status(400)
-          .json({ message: 'There was a problem. Card not added to collection' });
-      }
-
-      // const card = await Card.findOne({_id: ObjectId(newCard.id)});
+      const card = await Card.findOne({ id: selectedCard.id });
       // console.log(card)
-      // if(!card) {
-      //   return res.status(400).send('No card found');
-      // }
-    
-      await newCard.save();
-      res.send(newCard);
-    } catch(error) {
+      if (!card) {
+        console.log(card)
+        newCard = await new Card(selectedCard);
+
+        if (!newCard) {
+          console.log('cant create new card')
+          return res
+            .status(400)
+            .json({ message: 'There was a problem. Card not added to collection' });
+        } else {
+
+          await newCard.save();
+        }
+        // return res.status(400).send('Card already exist');
+      } 
       
-      res.send(error);
+
+      try {
+        const user = await User.findOne({ _id: ObjectId(userID) });
+
+        if (!user) {
+          return res.status(400).send('No corresponding user found');
+        }
+
+        const cardExist = user.cards.find(card => {
+          return card.id === selectedCard.id
+        })
+        
+        if(cardExist) {
+          return res.status(400).send('Card already exist in collection');
+        }
+
+      // Add newCard from current user cards object
+      User.updateOne(
+        { _id: ObjectId(userID) },
+        {
+          $push: {
+            cards: { ...newCard }
+          }
+        },
+        () => console.log(`${newCard.name} successfully added to store`)
+      );
+
+      appendToFile(fs, './data/cardcatalog.json', newCard, 'utf8');
+        
+        res.status(200).send({message: `Card was successfuly added to your collection`})
+      } catch (error) {
+        res.send(error)
+      }
+
+
+    } catch (error) {
+      res.send(error)
     }
+
+    // try {
+
+    //   const user = await User.findOne({ _id: userID });
+
+    //   if (!user) {
+    //     return res.status(400).send('No corresponding user found');
+    //   }
+
+
+
+
+    // userID = ObjectId(userID);
+    // console.log(userID)
+    //   // Add newCard from current user cards object
+    //   User.updateOne(
+    //     { _id: userID },
+    //     {
+    //       $push: {
+    //         cards: { ...newCard }
+    //       }
+    //     },
+    //     () => console.log(`${name} successfully added to store`)
+    //   );
+
+    //   appendToFile(fs, './data/cardcatalog.json', newCard, 'utf8');
+
+    //   await newCard.save();
+
+    // res.send({ message: 'Card successully added to your store', data: req.body });
+    // res.send({ data: cards });
+
+
+    // } catch(error) {
+      
+    //   res.send(error);
+    // }
 
     // res.send({user: userID, card: cardID})
     // let { card, userID } = await req.body;
