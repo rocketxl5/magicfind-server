@@ -38,7 +38,7 @@ router.post('/login',
         const messages = {
             failed: {
                 type: 'error',
-                title: `Connexion failed`,
+                title: 'Connexion failed',
                 body: 'The email or password you provided is invalid. Please try again.'
             },
             server: {

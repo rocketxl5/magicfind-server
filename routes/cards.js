@@ -47,6 +47,7 @@ router.get('/api-cardnames', async (req, res) => {
 
 // Get Single Card By Name (Search user strore for single card)
 router.get('/:cardName/:userID', auth, async (req, res) => {
+  console.log(req.params)
   if (req.params.cardName === '') {
     return res.status(400).json({ msg: 'Field is empty' });
   }
@@ -55,14 +56,20 @@ router.get('/:cardName/:userID', auth, async (req, res) => {
 
   try {
     let user = await User.findOne({ _id: userID });
-
+    console.log(user)
     if (!user) {
       return res.status(400).send('User does not exist');
     }
 
-    const results = user.cards.filter((card) => {
+
+
+
+
+    const results = user.cards.unpublished.filter((card) => {
       return card.name.toLowerCase() === cardName.toLowerCase();
     });
+
+    // console.log(results)
 
     if (!results) {
       return res.status(400).json({ msg: 'Could not find card in store' });
@@ -132,16 +139,17 @@ router.post(
     const selectedCard = await req.body;
 
     let newCard = {};
+    let user = {};
+    console.log(cardID)
+    console.log(userID)
 
     try {
-      const card = await Card.findOne({ id: selectedCard.id });
-      // console.log(card)
-      if (!card) {
-        console.log(card)
+      newCard = await Card.findOne({ id: selectedCard.id });
+      // console.log(newCard)
+      if (!newCard) {
         newCard = await new Card(selectedCard);
 
         if (!newCard) {
-          console.log('cant create new card')
           return res
             .status(400)
             .json({ message: 'There was a problem. Card not added to collection' });
@@ -149,48 +157,103 @@ router.post(
 
           await newCard.save();
         }
-        // return res.status(400).send('Card already exist');
-      } 
-      
-
-      try {
-        const user = await User.findOne({ _id: ObjectId(userID) });
-
-        if (!user) {
-          return res.status(400).send('No corresponding user found');
-        }
-
-        const cardExist = user.cards.find(card => {
-          return card.id === selectedCard.id
-        })
-        
-        if(cardExist) {
-          return res.status(400).send('Card already exist in collection');
-        }
-
-      // Add newCard from current user cards object
-      User.updateOne(
-        { _id: ObjectId(userID) },
-        {
-          $push: {
-            cards: { ...newCard }
-          }
-        },
-        () => console.log(`${newCard.name} successfully added to store`)
-      );
-
-      appendToFile(fs, './data/cardcatalog.json', newCard, 'utf8');
-        
-        res.status(200).send({message: `Card was successfuly added to your collection`})
-      } catch (error) {
-        res.send(error)
       }
+    } catch (error) {
+      res.send(error)
+    }
+
+    try {
+
+      const user = await User.findOne({ _id: ObjectId(userID) });
+
+      // console.log(user.cards.includes(selectedCard.id))
+
+      if (!user) {
+        return res.status(400).send('No corresponding user found');
+      }
+
+      const isFound = async (user, selectedCard) => {
+        try {
+          const cards = user.cards.unpublished
+          // console.log(cards)
+          return await cards.find(card => card.id === selectedCard.id)
+
+        } catch (error) {
+          console.error(`Error: ${error}`)
+        }
+      }
+
+      // console.log(await isFound(user, selectedCard))
+      if (await isFound(user, selectedCard)) {
+        return res.status(400).send('Card already exist in your collection');
+      }
+
+      const writeFile = async (fs, catalog, card) => {
+        try {
+          let parsed = JSON.parse(catalog);
+          parsed.push(card);
+          stringed = JSON.stringify(parsed);
+          const res = await fs.writeFileSync('./data/cardcatalog.json', stringed, 'utf8');
+          return res;
+        } catch (error) {
+          console.error(`Error: ${error}`);
+        }
+      }
+
+      const readFile = async (fs) => {
+        try {
+          const catalog = await fs.readFileSync('./data/cardcatalog.json', 'utf8');
+          return catalog;
+        } catch (error) {
+          console.error(`Error: ${error}`);
+        }
+      }
+
+      const catalog = await readFile(fs);
+
+      const added = await writeFile(fs, catalog, newCard)
+
+      // console.log(added)
+
 
 
     } catch (error) {
       res.send(error)
     }
 
+    try {
+      const copy = newCard.toObject();
+      delete copy['_owners'];
+      delete copy['_published'];
+
+      Card.updateOne(
+        {
+          id: newCard.id
+        },
+        {
+          $push: {
+            _owners: { userID }
+          }
+        },
+        () => console.log(`${userID} successfully added to owners`))
+
+      // Add newCard from current user cards object
+
+      User.updateOne(
+        { _id: ObjectId(userID) },
+        {
+          $push: {
+            'cards.unpublished': { ...copy }
+          }
+        },
+        () => console.log(`${newCard.name} successfully added to store`)
+      );
+
+      res.status(200).send({ message: `Card was successfuly added to your collection`, card: selectedCard })
+
+      } catch (error) {
+        res.send(error)
+      }
 
     // const newProps = [
     //   'asking_price',
@@ -203,8 +266,6 @@ router.post(
     //   'userName',
     //   'userCountry',
     // ];
-
-
   }
 );
 

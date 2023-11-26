@@ -161,46 +161,18 @@ const cardSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  // condition: {
-  //   type: String,
-  //   default: ''
-  // },
-  // lang: {
-  //   type: String,
-  //   default: 'en'
-  // },
-  // quantity: {
-  //   type: Number,
-  //   default: 1
-  // },
-  // asking_price: {
-  //   type: Object,
-  //   default: {}
-  // },
-  // comment: {
-  //   type: String,
-  //   default: ''
-  // },
-  // isPublished: {
-  //   type: Boolean,
-  //   default: false
-  // },
-  // datePublished: {
-  //   type: Date,
-  //   default: ''
-  // },
-  // userID: {
-  //   type: String,
-  //   default: ''
-  // },
-  // userName: {
-  //   type: String,
-  //   default: ''
-  // },
-  // userCountry: {
-  //   type: String,
-  //   default: ''
-  // },
+  _created_at: {
+    type: Date,
+    default: Date.now
+  },
+  _published: {
+    type: Array,
+    default: []
+  },
+  _owners: {
+    type: Array,
+    default: []
+  },
 });
 
 module.exports = mongoose.model('Card', cardSchema);

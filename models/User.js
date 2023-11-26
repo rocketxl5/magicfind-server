@@ -26,8 +26,8 @@ const userSchema = new mongoose.Schema({
     cards: {
         type: Object,
         default: {
-            published: { type: Array },
-            unpublished: { type: Array }
+            published: [],
+            unpublished: []
         }
     },
     messages: {
