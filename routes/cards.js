@@ -47,6 +47,7 @@ router.get('/api-cardnames', async (req, res) => {
 
 // Get Single Card By Name (Search user strore for single card)
 router.get('/:cardName/:userID', auth, async (req, res) => {
+  console.log(req.params)
   if (req.params.cardName === '') {
     return res.status(400).json({ msg: 'Field is empty' });
   }
@@ -55,14 +56,20 @@ router.get('/:cardName/:userID', auth, async (req, res) => {
 
   try {
     let user = await User.findOne({ _id: userID });
-
+    console.log(user)
     if (!user) {
       return res.status(400).send('User does not exist');
     }
 
-    const results = user.cards.filter((card) => {
+
+
+
+
+    const results = user.cards.unpublished.filter((card) => {
       return card.name.toLowerCase() === cardName.toLowerCase();
     });
+
+    // console.log(results)
 
     if (!results) {
       return res.status(400).json({ msg: 'Could not find card in store' });
@@ -150,42 +157,10 @@ router.post(
 
           await newCard.save();
         }
-        // return res.status(400).send('Card already exist');
-        // console.log(newCard)
-        // const user = await User.findOne({ _id: ObjectId(userID) });
-        // // console.log(user)
-        // if (!user) {
-        //   return res.status(400).send('No corresponding user found');
-        // }
-
-        // const cardExist = user.cards.find(card => {
-        //   return card.id === selectedCard.id
-        // })
-
-        // if(cardExist) {
-        //   return res.status(400).send('Card already exist in collection');
-        // }
-
       }
     } catch (error) {
       res.send(error)
     }
-
-
-
-
-
-
-
-    // const cardExist = user.cards.find(card => {
-    //   return card.id === selectedCard.id
-    // })
-
-    // if (user.cards.includes(selectedCard.id)) {
-    //   return res.status(400).send('Card already exist in collection');
-    // }
-
-
 
     try {
 
@@ -197,30 +172,59 @@ router.post(
         return res.status(400).send('No corresponding user found');
       }
 
-      // let promise = new Promise(function (resolve, reject) {
-      //   const found = user.cards.find(card => card.id === selectedCard.id)
+      const isFound = async (user, selectedCard) => {
+        try {
+          const cards = user.cards.unpublished
+          // console.log(cards)
+          return await cards.find(card => card.id === selectedCard.id)
 
-      //   if (!found) {
+        } catch (error) {
+          console.error(`Error: ${error}`)
+        }
+      }
 
-      //     resolve(false);
-      //   }
-      //   else {
+      // console.log(await isFound(user, selectedCard))
+      if (await isFound(user, selectedCard)) {
+        return res.status(400).send('Card already exist in your collection');
+      }
 
-      //     reject(true);
-      //   }
-      // }) 
+      const writeFile = async (fs, catalog, card) => {
+        try {
+          let parsed = JSON.parse(catalog);
+          parsed.push(card);
+          stringed = JSON.stringify(parsed);
+          const res = await fs.writeFileSync('./data/cardcatalog.json', stringed, 'utf8');
+          return res;
+        } catch (error) {
+          console.error(`Error: ${error}`);
+        }
+      }
 
-      // promise.then(
-      //   (nofound) => { console.log('Card will be added to collection') },
-      //   (found) => { return res.status(400).send('Card already exist in collection') }
-      // )
+      const readFile = async (fs) => {
+        try {
+          const catalog = await fs.readFileSync('./data/cardcatalog.json', 'utf8');
+          return catalog;
+        } catch (error) {
+          console.error(`Error: ${error}`);
+        }
+      }
+
+      const catalog = await readFile(fs);
+
+      const added = await writeFile(fs, catalog, newCard)
+
+      // console.log(added)
 
 
+
+    } catch (error) {
+      res.send(error)
+    }
+
+    try {
       const copy = newCard.toObject();
       delete copy['_owners'];
       delete copy['_published'];
-
-      // console.log(copy)
 
       Card.updateOne(
         {
@@ -245,14 +249,11 @@ router.post(
         () => console.log(`${newCard.name} successfully added to store`)
       );
 
-      // appendToFile(fs, './data/cardcatalog.json', newCard, 'utf8');
       res.status(200).send({ message: `Card was successfuly added to your collection`, card: selectedCard })
 
       } catch (error) {
         res.send(error)
       }
-
-
 
     // const newProps = [
     //   'asking_price',
@@ -265,8 +266,6 @@ router.post(
     //   'userName',
     //   'userCountry',
     // ];
-
-
   }
 );
 
