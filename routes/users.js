@@ -35,7 +35,7 @@ router.post('/login',
 
         const { email, password } = await req.body;
 
-        const messages = {
+        const message = {
             failed: {
                 type: 'error',
                 title: 'Connexion failed',
@@ -44,7 +44,7 @@ router.post('/login',
             server: {
                 type: 'error',
                 title: 'Server issue',
-                input: 'Server cannot process your request',
+                input: 'Server cannot process request',
 
             }
         }
@@ -53,14 +53,14 @@ router.post('/login',
             const user = await User.findOne({ email })
 
             if (!user) {
-                return res.status(400).json(messages.failed)
+                return res.status(400).json(message.failed)
             }
 
             try {
                 const isMatch = await bcrypt.compare(password, user.password)
 
                 if (!isMatch) {
-                    return res.status(400).json(messages.failed)
+                    return res.status(400).json(message.failed)
                 }
 
             } catch (error) {
@@ -96,7 +96,7 @@ router.post('/login',
 router.post('/signup', async (req, res) => {
 
     const { name, email, country, password } = await req.body
-    const messages = {
+    const message = {
         success: {
             type: 'success',
             name: `${name}`,
@@ -117,8 +117,8 @@ router.post('/signup', async (req, res) => {
 
         // Throw error if name exist
         if (userName) {
-            // throw new Error(messages.error.username)
-            return res.status(400).json(messages.error.name)
+            // throw new Error(message.error.username)
+            return res.status(400).json(message.error.name)
         }
 
         // Check if email is available
@@ -126,8 +126,8 @@ router.post('/signup', async (req, res) => {
 
         // Throw error if email exist
         if (userEmail) {
-            // throw new Error(messages.error.email)
-            return res.status(400).json(messages.error.email)
+            // throw new Error(message.error.email)
+            return res.status(400).json(message.error.email)
         }
 
         if (password && country) {
@@ -143,11 +143,11 @@ router.post('/signup', async (req, res) => {
 
             await newUser.save()
 
-            res.status(200).json({ message: messages.success })
+            res.status(200).json({ message: message.success })
         } else {
 
-            const message = !password ? messages.error.password : messages.error.country
-            return res.status(400).json(message)
+            const errMessage = !password ? message.error.password : message.error.country
+            return res.status(400).json(errMessage)
         }
 
     } catch (error) {
