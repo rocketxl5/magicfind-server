@@ -61,11 +61,7 @@ router.get('/:cardName/:userID', auth, async (req, res) => {
       return res.status(400).send('User does not exist');
     }
 
-
-
-
-
-    const results = user.cards.unpublished.filter((card) => {
+    const results = user.cards.filter((card) => {
       return card.name.toLowerCase() === cardName.toLowerCase();
     });
 
@@ -85,9 +81,6 @@ router.get('/:cardName/:userID', auth, async (req, res) => {
 // Get Single Card By ID
 router.get('/modify/:cardID/:userID', auth, async (req, res) => {
   const { cardID, userID } = await req.params;
-
-  // console.log('card id', cardID);
-  // console.log('user id', userID);
 
   try {
     let user = await User.findOne({ _id: userID });
@@ -111,6 +104,21 @@ router.get('/modify/:cardID/:userID', auth, async (req, res) => {
 // Get All Cards By User ID
 router.get('/:userID', auth, async (req, res) => {
   const { userID } = req.params;
+  const message = {
+    server: {
+      title: 'server',
+      body: 'Card could Not Be Added'
+
+    },
+    notFound: {
+      title: 'not_found',
+      body: 'No User Found'
+    },
+    noCards: {
+      title: 'no_cards',
+      body: ['Your collection is currently empty.', 'Go to the Add Card page to start adding cards to your collection.']
+    }
+  };
 
   try {
     let user = await User.findOne({ _id: userID });
@@ -121,7 +129,24 @@ router.get('/:userID', auth, async (req, res) => {
 
     const cards = user.cards;
 
-    res.status(200).json(cards);
+    const count = cards.length;
+
+    const cardNames = cards.map(card => {
+      return card.name
+    }).filter((name, index, array) => {
+      return array.indexOf(name) === index;
+    })
+
+    console.log(cardNames)
+    if (!count) {
+
+      return res.status(400).json(message.noCards)
+    }
+
+    res.status(200).json({
+      cards: cards,
+      names: cardNames
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -139,21 +164,20 @@ router.post(
     const selectedCard = await req.body;
     const message = {
       server: {
-        type: 'server',
-        body: 'A problem occured. Card could not be added.'
-
+        title: 'server',
+        body: 'Card could Not Be Added'
       },
       notFound: {
-        type: 'not_found',
-        body: 'No corresponding user found.'
+        title: 'not_found',
+        body: 'No User Found'
       },
       cardExist: {
-        type: 'card_exist',
-        body: 'Card Already In Collection.'
+        title: 'card_exist',
+        body: 'Card Already In Collection'
       },
       cardAdded: {
-        type: 'card_added',
-        body: 'Card Successfuly Added.'
+        title: 'card_added',
+        body: 'Card Successfuly Added'
       }
     }
 
@@ -183,12 +207,12 @@ router.post(
       const user = await User.findOne({ _id: ObjectId(userID) });
 
       if (!user) {
-        return res.status(400).send(message.notFound);
+        return res.status(400).json(message.notFound);
       }
 
       const isFound = async (user, cardID) => {
         try {
-          const cards = user.cards.unpublished;
+          const cards = user.cards;
           return await cards.find(card => {
             return card.id === cardID
           });
@@ -200,7 +224,7 @@ router.post(
 
       if (await isFound(user, cardID)) {
         console.log('is found')
-        return res.status(400).send(message.cardExist);
+        return res.status(400).json(message.cardExist);
       }
 
       const writeFile = async (fs, catalog, card) => {
@@ -233,9 +257,6 @@ router.post(
     }
 
     try {
-      const copy = newCard.toObject();
-      delete copy['_owners'];
-      delete copy['_published'];
 
       Card.updateOne(
         {
@@ -248,13 +269,18 @@ router.post(
         },
         () => console.log(`${userID} successfully added to owners`))
 
-      // Add newCard from current user cards object
 
+      let cardClone2 = newCard.toObject();
+      cardClone2 = { ...cardClone2, _is_published: false }
+      delete cardClone2['_owners'];
+      delete cardClone2['_published'];
+
+      // Add newCard from current user cards object
       User.updateOne(
         { _id: ObjectId(userID) },
         {
           $push: {
-            'cards.unpublished': { ...copy }
+            cards: { ...cardClone2 }
           }
         },
         () => console.log(`${newCard.name} successfully added to store`)
@@ -341,29 +367,39 @@ router.patch('/modify', auth, async (req, res) => {
 // Remove a given card from cards object of current user
 router.delete('/', auth, async (req, res) => {
   const { cardID, userID } = await req.body;
-  // console.log('cardID', cardID);
-  // console.log('userID', userID);
+  console.log('cardID', cardID);
+  console.log('userID', userID);
 
   try {
     const user = await User.findOneAndUpdate(
       { _id: ObjectId(userID) },
       {
         // Remove card from user profile cards object
-        $pull: { cards: { _id: ObjectId(cardID) } }
+        $pull: {
+          cards: { _id: ObjectId(cardID) }
+        }
       }
     );
 
-    deleteFromFile(fs, './data', 'cardcatalog.json', { cardID, userID }, 'utf8');
+    if (!user) {
+      return res.status(400).json({ message: 'Card could not be deleted from users collection' })
+    }
 
-    const card = await Card.findOneAndDelete({ _id: cardID });
+    // deleteFromFile(fs, './data', 'cardcatalog.json', { cardID, userID }, 'utf8');
+
+    const card = await Card.findOneAndDelete({ _id: ObjectId(cardID) });
+
+    if (!card) {
+      return res.status(400).json({ message: 'Card could not be deleted from cards' })
+    }
 
     res.status(200).json({
       msg: 'Card successfully deleted',
       card: card,
       user: user
     });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    res.status(500).json(error.message);
   }
 });
 
