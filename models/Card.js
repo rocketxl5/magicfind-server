@@ -172,7 +172,7 @@ const cardSchema = new mongoose.Schema({
   _owners: {
     type: Array,
     default: []
-  },
+  }
 });
 
 module.exports = mongoose.model('Card', cardSchema);
