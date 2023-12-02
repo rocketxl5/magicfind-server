@@ -14,15 +14,21 @@ const cardProps = require('../data/cardProps');
 
 // Get all english card names from Skryfall API
 router.get('/cardnames', async (req, res) => {
+  console.log('in')
   try {
     const response = await axios.get('https://api.scryfall.com/catalog/card-names');
     const cardnames = response.data.data;
 
+    // Returns array of cardnames minus cards beginning with A- (Arena cards)
     const filteredCardnames = cardnames.filter(cardname => {
       return /^(?!A-).*$/.test(cardname)
-    })
+    });
 
-    console.log(filteredCardnames)
+    const repetitions = data.map((name, index) => { return { name: name, index: index } })
+      .filter(obj => { return obj.name.includes('//') })
+      .map(obj => { return { name: obj.name.split('//').map(el => el.trim()), index: obj.index } })
+      .filter(obj => { return obj.name[0].includes(obj.name[1]) });
+    repetitions.forEach(repetition => data.splice(repetition.index, 1));
 
     handleFiles(fs, './data', 'cardnames.json', JSON.stringify(filteredCardnames));
 
@@ -38,25 +44,97 @@ router.get('/api-cardnames', async (req, res) => {
     const result = await fsPromises.readFile('./data/cardnames.json', { encoding: 'utf8' });
     const cardNames = await JSON.parse(result);
 
+    // Remove repeated card names with //
+    // ex: Ulamog, the ceaseless hunger // Ulamog, the ceaseless hunger
+    const searchRedundencies = async (cardNames) => {
+      try {
+        const result = await cardNames.map((name, index) => { return { name: name, index: index } })
+          .filter(obj => { return obj.name.includes('//') })
+          .map(obj => { return { name: obj.name.split('//').map(el => el.trim()), index: obj.index } })
+          .filter(obj => { return obj.name[0].includes(obj.name[1]) });
+        return await result;
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    const removeRedundencies = async (redundencies, cardNames) => {
+      await redundencies.forEach((redundency, i) => {
+        const index = redundency.index - i;
+        const spliced = cardNames.splice(index, 1);
+      });
+    }
 
-    res.status(200).json(cardNames);
+    searchRedundencies(cardNames).then((found) => {
+      removeRedundencies(found, cardNames).then(() => {
+        res.status(200).json(cardNames);
+      })
+    });
+
   } catch (error) {
     throw new Error('Cannot fetch card title from api cardnames file')
   }
-})
+});
+
+
+// Get cards from data/cardcatalog.json file
+router.get('/catalog/:userID', async (req, res) => {
+  const userID = req.params;
+  const message = {
+    noCards: {
+      title: 'no_cards',
+      body: 'Site catalog is currently empty.'
+    }
+  };
+  let cards = [];
+  let cardNames = [];
+
+  try {
+
+    const data = await fsPromises.readFile('./data/cardcatalog.json', { encoding: 'utf8' });
+    cards = JSON.parse(data);
+
+    const count = cards.length;
+
+    if (!count) {
+      return res.status(400).json(message.noCards)
+    }
+
+    const user = await User.findOne({ _id: userID });
+
+    if (!user) {
+      const copy = [...cards];
+      // cards = copy.filter(card => card.user)
+    }
+
+    cardNames = cards.map(card => {
+      return card.name
+    }).filter((name, index, array) => {
+      return array.indexOf(name) === index;
+    });
+
+    res.status(200).json({
+      cards: cards,
+      names: cardNames
+    });
+  } catch (error) {
+    console.log('error')
+    res.status(500).json({ message: error.message });
+  }
+});
 
 // Get Single Card By Name (Search user strore for single card)
 router.get('/:cardName/:userID', auth, async (req, res) => {
-  console.log(req.params)
+
+  let { cardName, userID } = req.params;
+
   if (req.params.cardName === '') {
     return res.status(400).json({ msg: 'Field is empty' });
   }
 
-  let { cardName, userID } = req.params;
-
+  console.log(cardName)
   try {
     let user = await User.findOne({ _id: userID });
-    console.log(user)
+    // console.log(user)
     if (!user) {
       return res.status(400).send('User does not exist');
     }
@@ -104,6 +182,7 @@ router.get('/modify/:cardID/:userID', auth, async (req, res) => {
 // Get All Cards By User ID
 router.get('/:userID', auth, async (req, res) => {
   const { userID } = req.params;
+
   const message = {
     server: {
       title: 'server',
@@ -131,17 +210,15 @@ router.get('/:userID', auth, async (req, res) => {
 
     const count = cards.length;
 
+    if (!count) {
+      return res.status(400).json(message.noCards)
+    }
+
     const cardNames = cards.map(card => {
       return card.name
     }).filter((name, index, array) => {
       return array.indexOf(name) === index;
     })
-
-    console.log(cardNames)
-    if (!count) {
-
-      return res.status(400).json(message.noCards)
-    }
 
     res.status(200).json({
       cards: cards,
@@ -218,6 +295,7 @@ router.post(
           });
 
         } catch (error) {
+          console.log('error')
           throw new Error(error)
         }
       }
@@ -228,6 +306,7 @@ router.post(
       }
 
       const writeFile = async (fs, catalog, card) => {
+        console.log(catalog)
         try {
           let parsed = JSON.parse(catalog);
           parsed.push(card);
@@ -248,9 +327,11 @@ router.post(
         }
       }
 
-      const catalog = await readFile(fs);
+      readFile(fs).then((result) => {
+        writeFile(fs, result, newCard)
+      })
 
-      const added = await writeFile(fs, catalog, newCard)
+
 
     } catch (error) {
       throw new Error(error)
@@ -286,7 +367,7 @@ router.post(
         () => console.log(`${newCard.name} successfully added to store`)
       );
 
-      res.status(200).send(message.cardAdded);
+      res.status(200).json(message.cardAdded);
 
       } catch (error) {
       throw new Error(error)
@@ -367,11 +448,9 @@ router.patch('/modify', auth, async (req, res) => {
 // Remove a given card from cards object of current user
 router.delete('/', auth, async (req, res) => {
   const { cardID, userID } = await req.body;
-  console.log('cardID', cardID);
-  console.log('userID', userID);
 
   try {
-    const user = await User.findOneAndUpdate(
+    let user = await User.findOneAndUpdate(
       { _id: ObjectId(userID) },
       {
         // Remove card from user profile cards object
@@ -382,7 +461,7 @@ router.delete('/', auth, async (req, res) => {
     );
 
     if (!user) {
-      return res.status(400).json({ message: 'Card could not be deleted from users collection' })
+      return res.status(400).json({ message: 'Card could not be deleted from users collection', isDeleted: false });
     }
 
     // deleteFromFile(fs, './data', 'cardcatalog.json', { cardID, userID }, 'utf8');
@@ -390,13 +469,19 @@ router.delete('/', auth, async (req, res) => {
     const card = await Card.findOneAndDelete({ _id: ObjectId(cardID) });
 
     if (!card) {
-      return res.status(400).json({ message: 'Card could not be deleted from cards' })
+      return res.status(400).json({ message: 'Card could not be deleted from cards', isDeleted: false });
+    }
+
+    user = await User.findOne({ _id: ObjectId(userID) });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Could not retrieve user data', isDeleted: false });
     }
 
     res.status(200).json({
-      msg: 'Card successfully deleted',
-      card: card,
-      user: user
+      message: 'Card successfully deleted',
+      isDeleted: true,
+      cards: user.cards
     });
   } catch (error) {
     res.status(500).json(error.message);

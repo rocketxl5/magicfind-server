@@ -9,20 +9,6 @@ const ObjectId = require('mongodb').ObjectId;
 const Card = require('../models/Card');
 const { handleFiles } = require('../helpers/handleFiles');
 
-// Get cards from data/cardcatalog.json file
-// Query sent from Autocomplete module @SearchCatalog @SearchCollection 
-router.get('/', async (req, res) => {
-  try {
-    const result = await fsPromises.readFile('./data/cardcatalog.json', { encoding: 'utf8' });
-    const data = JSON.parse(result);
-
-    res.status(200).json(data);
-  } catch (error) {
-    console.log('error')
-    res.status(500).json({ message: error.message });
-  }
-});
-
 // SearchCatalog request
 // Get all cards in Magic Find catalog where catalog card name === cardName
 router.get('/:cardName', async (req, res) => {
