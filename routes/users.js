@@ -39,7 +39,7 @@ router.post('/login',
             failed: {
                 type: 'error',
                 title: 'Connexion failed',
-                body: 'The email or password you provided is invalid. Please try again.'
+                body: 'Incorrect username of password.'
             },
             server: {
                 type: 'error',
@@ -69,7 +69,9 @@ router.post('/login',
 
             const payload = {
                 user: {
-                    id: user.id
+                    id: user.id,
+                    name: user.name,
+                    email: user.email
                 }
             }
 

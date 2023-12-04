@@ -1,11 +1,27 @@
 require('dotenv').config();
 const express = require('express');
+const session = require('express-session');
 const wokeDyno = require('woke-dyno');
 const connectDB = require('./config/db');
 const app = express();
 const cors = require('cors');
 const PORT = process.env.PORT || 5000;
 connectDB();
+
+// app.use(session({
+//     secret: process.env.JWT_SECRET,
+//     saveUninitialized: true,
+//     resave: false,
+//     cookie: {
+//         httpOnly: true,
+//         maxAge: parseInt(process.env.SESSION_MAX_AGE)
+//     }
+// }));
+
+app.use((req, res, next) => {
+    console.log(req.session);
+    next();
+})
 
 app.use(cors({ origin: '*', credentials: true }));
 

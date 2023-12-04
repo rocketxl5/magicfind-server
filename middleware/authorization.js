@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 module.exports = async (req, res, next) => {
   // Get token from header
   const token = await req.header('auth-token');
-  // console.log(token)
+  console.log(token)
   //  If no token
   if (!token) {
     // 401 unauthorized
@@ -24,10 +24,11 @@ module.exports = async (req, res, next) => {
   //   Alt
   try {
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    console.log(decoded.user)
     req.user = decoded.user;
     next();
   } catch (err) {
-    console.error(err.message);
+    console.error('error jwt', err.message);
     res.status(403).json({ message: err.message });
     // throw new Error(err.message)
   }

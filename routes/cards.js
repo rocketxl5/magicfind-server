@@ -14,7 +14,6 @@ const cardProps = require('../data/cardProps');
 
 // Get all english card names from Skryfall API
 router.get('/cardnames', async (req, res) => {
-  console.log('in')
   try {
     const response = await axios.get('https://api.scryfall.com/catalog/card-names');
     const cardnames = response.data.data;
@@ -41,8 +40,8 @@ router.get('/cardnames', async (req, res) => {
 // Get Skryfall API card title from data/cardnames.json
 router.get('/api-cardnames', async (req, res) => {
   try {
-    const result = await fsPromises.readFile('./data/cardnames.json', { encoding: 'utf8' });
-    const cardNames = await JSON.parse(result);
+    const result = fs.readFileSync('./data/cardnames.json', { encoding: 'utf8' });
+    const cardNames = JSON.parse(result);
 
     // Remove repeated card names with //
     // ex: Ulamog, the ceaseless hunger // Ulamog, the ceaseless hunger
@@ -54,7 +53,7 @@ router.get('/api-cardnames', async (req, res) => {
           .filter(obj => { return obj.name[0].includes(obj.name[1]) });
         return await result;
       } catch (error) {
-        console.log(error.message);
+        throw new Error(error.message)
       }
     }
     const removeRedundencies = async (redundencies, cardNames) => {
@@ -117,7 +116,6 @@ router.get('/catalog/:userID', async (req, res) => {
       names: cardNames
     });
   } catch (error) {
-    console.log('error')
     res.status(500).json({ message: error.message });
   }
 });
@@ -131,7 +129,6 @@ router.get('/:cardName/:userID', auth, async (req, res) => {
     return res.status(400).json({ msg: 'Field is empty' });
   }
 
-  console.log(cardName)
   try {
     let user = await User.findOne({ _id: userID });
     // console.log(user)
@@ -142,8 +139,6 @@ router.get('/:cardName/:userID', auth, async (req, res) => {
     const results = user.cards.filter((card) => {
       return card.name.toLowerCase() === cardName.toLowerCase();
     });
-
-    // console.log(results)
 
     if (!results) {
       return res.status(400).json({ msg: 'Could not find card in store' });
@@ -239,6 +234,7 @@ router.post(
   async (req, res) => {
     const { userID, cardID } = await req.params;
     const selectedCard = await req.body;
+
     const message = {
       server: {
         title: 'server',
@@ -269,7 +265,7 @@ router.post(
         if (!newCard) {
           return res
             .status(400)
-            .json(message.server);
+            .json({ message: message.server });
         } else {
 
           await newCard.save();
@@ -295,43 +291,26 @@ router.post(
           });
 
         } catch (error) {
-          console.log('error')
           throw new Error(error)
         }
       }
 
       if (await isFound(user, cardID)) {
-        console.log('is found')
         return res.status(400).json(message.cardExist);
       }
 
-      const writeFile = async (fs, catalog, card) => {
-        console.log(catalog)
-        try {
-          let parsed = JSON.parse(catalog);
-          parsed.push(card);
-          stringed = JSON.stringify(parsed);
-          const res = await fs.writeFileSync('./data/cardcatalog.json', stringed, 'utf8');
-          return res;
-        } catch (error) {
-          console.error(`Error: ${error}`);
-        }
+
+      const stat = fs.statSync('./data/cardcatalog.json')
+      if (!stat.size) {
+        const card = []
+        card.push(JSON.stringify(newCard))
+        fs.writeFileSync('./data/cardcatalog.json', JSON.stringify(card), 'utf8')
+      } else {
+        const result = fs.readFileSync('./data/cardcatalog.json', { encoding: 'utf8' });
+        const cards = JSON.parse(result)
+        cards.push(newCard)
+        fs.writeFileSync('./data/cardcatalog.json', JSON.stringify(cards), 'utf8')
       }
-
-      const readFile = async (fs) => {
-        try {
-          const catalog = await fs.readFileSync('./data/cardcatalog.json', 'utf8');
-          return catalog;
-        } catch (error) {
-          console.error(`Error: ${error}`);
-        }
-      }
-
-      readFile(fs).then((result) => {
-        writeFile(fs, result, newCard)
-      })
-
-
 
     } catch (error) {
       throw new Error(error)
@@ -367,7 +346,7 @@ router.post(
         () => console.log(`${newCard.name} successfully added to store`)
       );
 
-      res.status(200).json(message.cardAdded);
+      res.status(200).json({ message: message.cardAdded });
 
       } catch (error) {
       throw new Error(error)
