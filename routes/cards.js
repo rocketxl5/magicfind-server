@@ -234,7 +234,6 @@ router.post(
   async (req, res) => {
     const { userID, cardID } = await req.params;
     const selectedCard = await req.body;
-
     const message = {
       server: {
         title: 'server',
@@ -300,17 +299,17 @@ router.post(
       }
 
 
-      const stat = fs.statSync('./data/cardcatalog.json')
-      if (!stat.size) {
-        const card = []
-        card.push(JSON.stringify(newCard))
-        fs.writeFileSync('./data/cardcatalog.json', JSON.stringify(card), 'utf8')
-      } else {
-        const result = fs.readFileSync('./data/cardcatalog.json', { encoding: 'utf8' });
-        const cards = JSON.parse(result)
-        cards.push(newCard)
-        fs.writeFileSync('./data/cardcatalog.json', JSON.stringify(cards), 'utf8')
-      }
+      // const stat = fs.statSync('./data/cardcatalog.json')
+      // if (!stat.size) {
+      //   const card = []
+      //   card.push(JSON.stringify(newCard))
+      //   fs.writeFileSync('./data/cardcatalog.json', JSON.stringify(card), 'utf8')
+      // } else {
+      //   const result = fs.readFileSync('./data/cardcatalog.json', { encoding: 'utf8' });
+      //   const cards = JSON.parse(result)
+      //   cards.push(newCard)
+      //   fs.writeFileSync('./data/cardcatalog.json', JSON.stringify(cards), 'utf8')
+      // }
 
     } catch (error) {
       throw new Error(error)

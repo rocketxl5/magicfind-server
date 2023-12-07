@@ -84,7 +84,7 @@ router.post('/login',
                         throw new Error(error)
                     }
 
-                    res.status(200).json({ token, user })
+                    res.status(200).json({ token, payload })
                 }
             )
         } catch (error) {
