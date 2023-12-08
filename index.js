@@ -18,11 +18,6 @@ connectDB();
 //     }
 // }));
 
-app.use((req, res, next) => {
-    console.log(req.session);
-    next();
-})
-
 app.use(cors({ origin: '*', credentials: true }));
 
 const SELF_URL = 'https://magicfind-server.onrender.com/';

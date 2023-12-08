@@ -174,7 +174,7 @@ router.get('/modify/:cardID/:userID', auth, async (req, res) => {
   }
 });
 
-// Get All Cards By User ID
+// Get All cards and cardnames By User ID
 router.get('/:userID', auth, async (req, res) => {
   const { userID } = req.params;
 
@@ -209,6 +209,7 @@ router.get('/:userID', auth, async (req, res) => {
       return res.status(400).json(message.noCards)
     }
 
+    // Filter singled card names
     const cardNames = cards.map(card => {
       return card.name
     }).filter((name, index, array) => {
@@ -251,6 +252,13 @@ router.post(
         title: 'card_added',
         body: 'Card Successfuly Added'
       }
+    }
+
+
+
+    const updateCard = (card) => {
+      const updated = { ...card, _asking_price: 0, _condition: '', _ships_from: '', _comments: '' }
+      return updated;
     }
 
     let newCard = {};
@@ -366,10 +374,27 @@ router.post(
 );
 
 // Modify card data from user store
-router.patch('/modify', auth, async (req, res) => {
-  const { cardID, condition, language, quantity, price, comment, isPublished, datePublished, userID } =
-    await req.body;
-  // console.log(req.body);
+router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
+  const {
+    condition,
+    quantity,
+    price,
+    comment,
+    isPublished,
+    datePublished
+  } = await req.body;
+
+  const { cardID, userID } = await req.params;
+
+  console.log('cardid', cardID)
+  console.log('userid', userID)
+  console.log('price', price)
+  console.log('condition', condition)
+  console.log('quantity', quantity)
+  console.log('comment', comment)
+  console.log('isPublished', isPublished)
+  console.log('datePublished', datePublished.toString())
+
   try {
     const updatedCard = await User.updateOne(
       {
@@ -378,10 +403,9 @@ router.patch('/modify', auth, async (req, res) => {
       },
       {
         $set: {
-          'cards.$.condition': condition,
-          'cards.$.language': language,
-          'cards.$.quantity': quantity,
           'cards.$.price': price,
+          'cards.$.quantity': quantity,
+          'cards.$.condition': condition,
           'cards.$.comment': comment,
           'cards.$.isPublished': isPublished,
           'cards.$.datePublished': datePublished
@@ -392,7 +416,7 @@ router.patch('/modify', auth, async (req, res) => {
     if (!updatedCard) {
       return res
         .status(400)
-        .json({ errors: [{ msg: 'User does not exists' }] });
+        .json({ message: 'User does not exists' });
     }
 
     const updatedOwner = await Card.updateOne(
@@ -402,11 +426,11 @@ router.patch('/modify', auth, async (req, res) => {
       {
         $set: {
           condition,
-          language,
           quantity,
           price,
           comment,
-          isPublished
+          isPublished,
+          datePublished
         }
       }
     );
@@ -414,10 +438,10 @@ router.patch('/modify', auth, async (req, res) => {
     if (!updatedOwner) {
       return res
         .status(400)
-        .json({ errors: [{ msg: 'Card does not exists' }] });
+        .json({ message: 'Card does not exists' });
     }
 
-    res.status(200).json({ data: [updatedCard, updatedOwner] });
+    res.status(200).json({ card: updatedCard, user: updatedOwner });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -161,10 +161,6 @@ const cardSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  _created_at: {
-    type: Date,
-    default: Date.now
-  },
   _published: {
     type: Array,
     default: []
