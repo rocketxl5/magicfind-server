@@ -267,6 +267,7 @@ router.post(
 
       newCard = await Card.findOne({ id: cardID });
       if (!newCard) {
+
         newCard = await new Card(selectedCard);
 
         if (!newCard) {
@@ -336,16 +337,22 @@ router.post(
         },
         () => console.log(`${userID} successfully added to owners`))
 
-
-      let cardClone2 = newCard.toObject();
-      delete cardClone2['_owners'];
+      const _price = 0;
+      const _quantity = 0;
+      const _condition = '';
+      const _comment = '';
+      const _is_published = false;
+      const _date_published = ''
+      let clone = newCard.toObject();
+      delete clone['_owners'];
+      clone = { ...clone, _price, _quantity, _condition, _comment, _is_published, _date_published }
 
       // Add newCard from current user cards object
       User.updateOne(
         { _id: ObjectId(userID) },
         {
           $push: {
-            cards: { ...cardClone2 }
+            cards: { ...clone }
           }
         },
         () => console.log(`${newCard.name} successfully added to store`)
@@ -391,7 +398,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
   console.log('quantity', quantity)
   console.log('comment', comment)
   console.log('isPublished', isPublished)
-  console.log('datePublished', datePublished.toString())
+  // console.log('datePublished', datePublished.toString())
 
   try {
     const updatedCard = await User.updateOne(
