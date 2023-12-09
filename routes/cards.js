@@ -338,9 +338,7 @@ router.post(
 
 
       let cardClone2 = newCard.toObject();
-      cardClone2 = { ...cardClone2, _is_published: false }
       delete cardClone2['_owners'];
-      delete cardClone2['_published'];
 
       // Add newCard from current user cards object
       User.updateOne(
@@ -403,12 +401,12 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
       },
       {
         $set: {
-          'cards.$.price': price,
-          'cards.$.quantity': quantity,
-          'cards.$.condition': condition,
-          'cards.$.comment': comment,
-          'cards.$.isPublished': isPublished,
-          'cards.$.datePublished': datePublished
+          'cards.$._price': price,
+          'cards.$._quantity': quantity,
+          'cards.$._condition': condition,
+          'cards.$._comment': comment,
+          'cards.$._is_published': isPublished,
+          'cards.$._date_published': datePublished
         }
       }
     );
@@ -419,27 +417,27 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
         .json({ message: 'User does not exists' });
     }
 
-    const updatedOwner = await Card.updateOne(
-      {
-        _id: ObjectId(cardID)
-      },
-      {
-        $set: {
-          condition,
-          quantity,
-          price,
-          comment,
-          isPublished,
-          datePublished
-        }
-      }
-    );
+    // const updatedOwner = await Card.updateOne(
+    //   {
+    //     _id: ObjectId(cardID)
+    //   },
+    //   {
+    //     $set: {
+    //       condition,
+    //       quantity,
+    //       price,
+    //       comment,
+    //       isPublished,
+    //       datePublished
+    //     }
+    //   }
+    // );
 
-    if (!updatedOwner) {
-      return res
-        .status(400)
-        .json({ message: 'Card does not exists' });
-    }
+    // if (!updatedOwner) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: 'Card does not exists' });
+    // }
 
     res.status(200).json({ card: updatedCard, user: updatedOwner });
   } catch (err) {
