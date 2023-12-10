@@ -165,6 +165,31 @@ const cardSchema = new mongoose.Schema({
     type: Array,
     default: []
   },
+  _price: {
+    type: Number,
+    default: 0
+  },
+  _quantity: {
+    type: Number,
+    default: 1
+  },
+  _condition: {
+    type: String,
+    default: 'nm'
+  },
+  _comment: {
+    type: String,
+    default: ''
+  },
+  _is_published: {
+    type: Boolean,
+    default: false
+  },
+  _date_published: {
+    type: Date,
+    default: Date.now()
+  }
 });
+
 
 module.exports = mongoose.model('Card', cardSchema);

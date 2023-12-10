@@ -7,6 +7,7 @@ const router = express.Router();
 const auth = require('../middleware/authorization');
 const Card = require('../models/Card');
 const User = require('../models/User');
+const mongoose = require('mongoose');
 const ObjectId = require('mongodb').ObjectId;
 const { appendToFile } = require('../helpers/appendToFile');
 const { handleFiles } = require('../helpers/handleFiles');
@@ -254,18 +255,14 @@ router.post(
       }
     }
 
-
-
-    const updateCard = (card) => {
-      const updated = { ...card, _asking_price: 0, _condition: '', _ships_from: '', _comments: '' }
-      return updated;
-    }
-
     let newCard = {};
 
     try {
 
+
       newCard = await Card.findOne({ id: cardID });
+
+
       if (!newCard) {
 
         newCard = await new Card(selectedCard);
@@ -332,27 +329,19 @@ router.post(
         },
         {
           $push: {
-            _owners: { userID }
+            _owners: { id: userID }
           }
         },
         () => console.log(`${userID} successfully added to owners`))
 
-      const _price = 0;
-      const _quantity = 0;
-      const _condition = '';
-      const _comment = '';
-      const _is_published = false;
-      const _date_published = ''
-      let clone = newCard.toObject();
-      delete clone['_owners'];
-      clone = { ...clone, _price, _quantity, _condition, _comment, _is_published, _date_published }
+      const { _owners, ...userCard } = newCard._doc;
 
       // Add newCard from current user cards object
       User.updateOne(
         { _id: ObjectId(userID) },
         {
           $push: {
-            cards: { ...clone }
+            cards: { ...userCard }
           }
         },
         () => console.log(`${newCard.name} successfully added to store`)
@@ -362,42 +351,30 @@ router.post(
 
       } catch (error) {
       throw new Error(error)
-      }
-
-    // const newProps = [
-    //   'asking_price',
-    //   'condition',
-    //   'comment',
-    //   'isPublished',
-    //   'datePublished',
-    //   'quantity',
-    //   'userID',
-    //   'userName',
-    //   'userCountry',
-    // ];
+    }
   }
 );
 
 // Modify card data from user store
 router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
   const {
-    condition,
-    quantity,
     price,
+    quantity,
+    condition,
     comment,
-    isPublished,
-    datePublished
+    isPublished
   } = await req.body;
 
-  const { cardID, userID } = await req.params;
+  const { cardID, userID } = req.params;
 
-  console.log('cardid', cardID)
-  console.log('userid', userID)
-  console.log('price', price)
-  console.log('condition', condition)
-  console.log('quantity', quantity)
-  console.log('comment', comment)
-  console.log('isPublished', isPublished)
+  // console.log('cardid', cardID)
+  // console.log('userid', userID)
+  // console.log('price', price)
+  // console.log('condition', condition)
+  // console.log('quantity', quantity)
+  // console.log('comment', comment)
+  // console.log('isPublished', isPublished)
+  // console.log('datePublished', Date.now())
   // console.log('datePublished', datePublished.toString())
 
   try {
@@ -413,10 +390,10 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
           'cards.$._condition': condition,
           'cards.$._comment': comment,
           'cards.$._is_published': isPublished,
-          'cards.$._date_published': datePublished
+          'cards.$._date_published': Date.now()
         }
       }
-    );
+    );  
 
     if (!updatedCard) {
       return res
@@ -424,29 +401,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
         .json({ message: 'User does not exists' });
     }
 
-    // const updatedOwner = await Card.updateOne(
-    //   {
-    //     _id: ObjectId(cardID)
-    //   },
-    //   {
-    //     $set: {
-    //       condition,
-    //       quantity,
-    //       price,
-    //       comment,
-    //       isPublished,
-    //       datePublished
-    //     }
-    //   }
-    // );
-
-    // if (!updatedOwner) {
-    //   return res
-    //     .status(400)
-    //     .json({ message: 'Card does not exists' });
-    // }
-
-    res.status(200).json({ card: updatedCard, user: updatedOwner });
+    res.status(200).json({ message: 'Card Successfuly Updated', card: updatedCard, isPublished: true });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -473,7 +428,15 @@ router.delete('/', auth, async (req, res) => {
 
     // deleteFromFile(fs, './data', 'cardcatalog.json', { cardID, userID }, 'utf8');
 
-    const card = await Card.findOneAndDelete({ _id: ObjectId(cardID) });
+    const card = await Card.findOneAndUpdate(
+      { _id: ObjectId(cardID) },
+      {
+        // Remove user form card _owners
+        $pull: {
+          _owners: { id: userID }
+        }
+      }
+    );
 
     if (!card) {
       return res.status(400).json({ message: 'Card could not be deleted from cards', isDeleted: false });
