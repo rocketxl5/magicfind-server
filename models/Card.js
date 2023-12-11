@@ -171,11 +171,11 @@ const cardSchema = new mongoose.Schema({
   },
   _quantity: {
     type: Number,
-    default: 1
+    default: 0
   },
   _condition: {
     type: String,
-    default: 'nm'
+    default: ''
   },
   _comment: {
     type: String,
@@ -187,7 +187,7 @@ const cardSchema = new mongoose.Schema({
   },
   _date_published: {
     type: Date,
-    default: Date.now()
+    default: undefined
   }
 });
 
