@@ -166,12 +166,10 @@ const cardSchema = new mongoose.Schema({
     default: []
   },
   _price: {
-    type: Number,
-    default: 0
+    type: Number
   },
   _quantity: {
     type: Number,
-    default: 0
   },
   _condition: {
     type: String,

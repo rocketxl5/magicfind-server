@@ -362,7 +362,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
     quantity,
     condition,
     comment,
-    isPublished
+    published
   } = await req.body;
 
   const { cardID, userID } = req.params;
@@ -389,7 +389,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
           'cards.$._quantity': quantity,
           'cards.$._condition': condition,
           'cards.$._comment': comment,
-          'cards.$._is_published': isPublished,
+          'cards.$._is_published': published,
           'cards.$._date_published': Date.now()
         }
       }
