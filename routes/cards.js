@@ -7,7 +7,6 @@ const router = express.Router();
 const auth = require('../middleware/authorization');
 const Card = require('../models/Card');
 const User = require('../models/User');
-const Catalog = require('../models/Catalog');
 const ObjectId = require('mongodb').ObjectId;
 const { appendToFile } = require('../helpers/appendToFile');
 const { handleFiles } = require('../helpers/handleFiles');
@@ -128,9 +127,7 @@ router.get('/catalog/:cardName', async (req, res) => {
         const { _published, ...rest } = card;
         publishedCards.push(Object.assign(rest, data));
       })
-    })
-
-
+    });
 
     res.status(200).json({
       cards: publishedCards,
