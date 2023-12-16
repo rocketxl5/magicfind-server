@@ -8,21 +8,10 @@ const cors = require('cors');
 const PORT = process.env.PORT || 5000;
 connectDB();
 
-// app.use(session({
-//     secret: process.env.JWT_SECRET,
-//     saveUninitialized: true,
-//     resave: false,
-//     cookie: {
-//         httpOnly: true,
-//         maxAge: parseInt(process.env.SESSION_MAX_AGE)
-//     }
-// }));
-
+app.use(express.json());
 app.use(cors({ origin: '*', credentials: true }));
 
 const SELF_URL = 'https://magicfind-server.onrender.com/';
-
-app.use(express.json());
 
 const dynoWaker = wokeDyno(SELF_URL);
 
