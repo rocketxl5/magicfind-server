@@ -190,17 +190,14 @@ router.get('/:userID', auth, async (req, res) => {
   };
 
   try {
-    let user = await User.findOne({ _id: userID });
-
+    const user = await User.findOne({ _id: ObjectId(userID) });
     if (!user) {
-      return res.status(400).json({ msg: 'User not found' });
+      return res.status(400).json({ message: 'User not found' });
     }
 
     const cards = user.cards;
 
-    const count = cards.length;
-
-    if (!count) {
+    if (cards.length === 0) {
       return res.status(400).json(message.noCards)
     }
 
@@ -213,10 +210,10 @@ router.get('/:userID', auth, async (req, res) => {
 
     res.status(200).json({
       cards: cards,
-      names: cardNames
+      names: cardNames,
     });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -281,9 +278,11 @@ router.post(
         return res.status(400).json(message.notFound);
       }
 
+      // Validation function
       const isFound = async (user, cardID) => {
         try {
           const cards = user.cards;
+          // Look if card already exists in user's cards
           return await cards.find(card => {
             return card.id === cardID
           });
@@ -293,6 +292,7 @@ router.post(
         }
       }
 
+      // If card already exists, skip and return
       if (await isFound(user, cardID)) {
         return res.status(400).json(message.cardExist);
       }
@@ -302,7 +302,7 @@ router.post(
     }
 
     try {
-
+      // Add user id to card owner array property
       Card.updateOne(
         {
           _id: ObjectId(newCard._id)
@@ -314,21 +314,22 @@ router.post(
         },
         () => console.log(`${userID} successfully added to owners`))
 
-      const { _owners, _published, ...userCard } = newCard;
+      // Convert mongoose to js object
+      // Remove owners & published properties
+      const { _owners, _published, ...rest } = newCard.toObject();
 
-      // Add newCard from current user cards object
+      // Add modified card object to user cards property array
       User.updateOne(
         { _id: ObjectId(userID) },
         {
           $push: {
-            cards: { ...userCard }
+            cards: { ...rest }
           }
         },
         () => console.log(`${newCard.name} successfully added to store`)
       );
 
       res.status(200).json({ message: message.cardAdded });
-
       } catch (error) {
       throw new Error(error)
     }
@@ -345,6 +346,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
     comment,
     published
   } = await req.body;
+
   const { cardID, userID } = req.params;
 
   let updatedCard
@@ -371,8 +373,6 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
 
     const user = await User.findOne({ _id: ObjectId(userID) });
 
-    console.log(user)
-
     if (!user) {
       return res.status(400).json({ message: 'Could not retrieve user data' });
     }
@@ -380,7 +380,6 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
     const { name, email } = user;
 
     if (published) {
-      console.log('in published')
       // Add user id to _publisde
       try {
         await Card.updateOne(
