@@ -198,7 +198,7 @@ router.get('/:userID', auth, async (req, res) => {
     const cards = user.cards;
 
     if (cards.length === 0) {
-      return res.status(400).json(message.noCards)
+      return res.status(400).json({ message: message.noCards })
     }
 
     // Filter singled card names
@@ -207,6 +207,8 @@ router.get('/:userID', auth, async (req, res) => {
     }).filter((name, index, array) => {
       return array.indexOf(name) === index;
     })
+
+    console.log(cardNames)
 
     res.status(200).json({
       cards: cards,
@@ -424,7 +426,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
 });
 
 // Remove a given card from cards object of current user
-router.delete('/', auth, async (req, res) => {
+router.delete('/delete', auth, async (req, res) => {
   const { cardID, userID } = await req.body;
 
   try {
@@ -465,6 +467,7 @@ router.delete('/', auth, async (req, res) => {
     }
 
     res.status(200).json({
+      cardName: card.name,
       cards: user.cards,
       isDeleted: true,
       message: 'Card successfully deleted',
