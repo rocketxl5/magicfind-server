@@ -97,9 +97,9 @@ router.get('/catalog', async (req, res) => {
   }
 });
 
-// /////////////////////
-// Search Catalog //////
-// /////////////////////
+// //////////////////////////////
+// Search Catalog Unauth Users //
+// //////////////////////////////
 router.get('/catalog/:cardName', async (req, res) => {
   const { cardName } = req.params;
   const page = req.query.page || 0;
@@ -138,6 +138,56 @@ router.get('/catalog/:cardName', async (req, res) => {
 
     res.status(200).json({
       cards: publishedCards,
+      cardName: cardName
+    })
+  } catch (error) {
+    return res.status(400).json({ message: error.message })
+  }
+})
+
+// ////////////////////////////
+// Search Catalog Auth Users //
+// ////////////////////////////
+router.get('/catalog/:cardName/:userID', async (req, res) => {
+  const { cardName, userID } = req.params;
+  const page = req.query.page || 0;
+  const cardsPerPage = 10;
+
+  try {
+    const results = await Card.find(
+      {
+        name: cardName,
+        _published: { $ne: [] }
+      },
+      {
+        card_faces: 1,
+        finishes: 1,
+        image_uris: 1,
+        name: 1,
+        oversized: 1,
+        set_name: 1,
+        _published: 1
+      });
+
+    if (!results.length) {
+      return res.status(400).json({ message: `No resul tfor ${cardName}`, cardName: cardName })
+    }
+
+    const cards = JSON.parse(JSON.stringify(results));
+
+    const publishedCards = [];
+
+    cards.forEach((card) => {
+      card._published.forEach((data) => {
+        const { _published, ...rest } = card;
+        publishedCards.push(Object.assign(rest, data));
+      })
+    });
+
+    const filteredCards = publishedCards.filter(card => card.userID !== userID);
+
+    res.status(200).json({
+      cards: filteredCards,
       cardName: cardName
     })
   } catch (error) {
@@ -349,7 +399,9 @@ router.post(
   }
 );
 
-// Modify card data from user store
+// /////////////////////////////
+// Edit Card [Edit, Update]  ///
+// /////////////////////////////
 router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
   const {
     cardName,
@@ -401,7 +453,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
           },
           {
             $push: {
-              _published: { userName: name, email, price, quantity, condition, comment }
+              _published: { userID, userName: name, email, price, quantity, condition, comment }
             }
           })
       } catch (error) {
@@ -420,7 +472,6 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
               _published: { userID: userID }
             }
           })
-        // () => console.log('Card successfuly removed from published cards'))
       } catch (error) {
         return res.status(400).json({ message: error.message })
       }
@@ -436,7 +487,9 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
   }
 });
 
-// Remove a given card from cards object of current user
+// //////////////////////////////////////////////
+// Delete Card [User.cards, Card._published]  ///
+// //////////////////////////////////////////////
 router.delete('/delete', auth, async (req, res) => {
   const { cardID, userID } = await req.body;
 
