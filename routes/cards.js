@@ -233,9 +233,9 @@ router.get('/collection/:userID/:cardName', auth, async (req, res) => {
 // ///////////////////////////////////
 // Search Collection by User ID //////
 // ///////////////////////////////////
-router.get('/:userID', auth, async (req, res) => {
-  const { userID } = req.params;
-
+router.get('/:userID/:query', auth, async (req, res) => {
+  const { userID, query } = req.params;
+  console.log(query)
   const message = {
     server: {
       title: 'server',
@@ -264,17 +264,22 @@ router.get('/:userID', auth, async (req, res) => {
       return res.status(400).json({ message: message.noCards })
     }
 
-    // Filter singled card names
-    const cardNames = cards.map(card => {
-      return card.name
-    }).filter((name, index, array) => {
-      return array.indexOf(name) === index;
-    })
+    let data
 
-    res.status(200).json({
-      cards: cards,
-      names: cardNames,
-    });
+    // If query is for card names
+    if (query === 'card-names') {
+      // Remove card names duplicates
+      data = cards.map(card => {
+        return card.name
+      }).filter((name, index, array) => {
+        return array.indexOf(name) === index;
+      })
+    }
+    else if (query === 'cards') {
+      data = cards
+    }
+
+    res.status(200).json({ query, data });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -415,10 +420,10 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
 
   const { cardID, userID } = req.params;
 
-  let updatedCard
+  // let updatedCard
 
   try {
-    updatedCard = await User.updateOne(
+    const updatedUser = await User.updateOne(
       {
         _id: ObjectId(userID),
         'cards._id': ObjectId(cardID)
@@ -438,6 +443,10 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
       }
     ); 
 
+    if (!updatedUser) {
+      return res.status(400).json({ message: 'Could not update selected card', collection: 'user' });
+    }
+
     const user = await User.findOne({ _id: ObjectId(userID) });
 
     if (!user) {
@@ -446,24 +455,54 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
 
     const { name, email } = user;
 
+    // If update is publish
     if (published) {
-      // Add user id to _publisde
+
       try {
-        await Card.updateOne(
+        // Search for existing document.
+        const doc = await Card.findOne({
+          _id: ObjectId(cardID),
+          '_published.userID': userID
+        })
+        // If it does not exist
+        if (!doc) {
+          // Create document
+          const publishCard = await Card.updateOne(
           {
             _id: ObjectId(cardID)
           },
           {
             $push: {
-              _published: { userID, userName: name, email, price, quantity, condition, comment }
+              _published: { userID, userName: name, email, price, quantity, language, condition, comment }
             }
           })
+        }
+        else {
+          // Else, update existing document
+          await Card.updateOne(
+            {
+              _id: ObjectId(cardID),
+              '_published.userID': userID
+            },
+            {
+              $set: {
+                '_published.$.userName': name,
+                '_published.$.userEmail': email,
+                '_published.$.price': price,
+                '_published.$.quantity': quantity,
+                '_published.$.condition': condition,
+                '_published.$.language': language,
+                '_published.$.comment': comment,
+              }
+            }
+          )
+        }
       } catch (error) {
-        return res.status(400).json({ message: error.message })
+        return res.status(400).json({ message: 'Something went wrong. Card could not be updated' })
       }
     }
+      // Update is unpublish card
     else {
-      console.log('in unpublished')
       try {
         await Card.updateOne(
           {
