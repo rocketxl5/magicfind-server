@@ -152,7 +152,7 @@ router.get('/catalog/:cardName/:userID', async (req, res) => {
   const { cardName, userID } = req.params;
   const page = req.query.page || 0;
   const cardsPerPage = 10;
-
+  console.log(cardName)
   try {
     const results = await Card.find(
       {
@@ -170,24 +170,27 @@ router.get('/catalog/:cardName/:userID', async (req, res) => {
       });
 
     if (!results.length) {
-      return res.status(400).json({ message: `No resul tfor ${cardName}`, cardName: cardName })
+      return res.status(400).json({ message: `No results found for ${cardName}`, errorType: 'not-found' })
     }
 
     const cards = JSON.parse(JSON.stringify(results));
+    // let userFound
 
-    const publishedCards = [];
+    // Remove user published cards
+    // const filteredCards = cards.flatMap((card, index) => {
+    //   return card._published.filter(publisedData => {
+    //     userFound = publisedData.userID === userID && true
+    //     return publisedData.userID !== userID;
+    //   })
+    // });
 
-    cards.forEach((card) => {
-      card._published.forEach((data) => {
-        const { _published, ...rest } = card;
-        publishedCards.push(Object.assign(rest, data));
-      })
-    });
-
-    const filteredCards = publishedCards.filter(card => card.userID !== userID);
+    // // If empty
+    // if (!filteredCards.length && userFound) {
+    //   return res.status(400).json({ message: `You are currently the only seller of ${cardName} on Magic Find. If you want to see the public view of your card, go to your Dashboard or search the Magic Find Catalog once logged out`, errorType: 'single-owner' });
+    // }
 
     res.status(200).json({
-      cards: filteredCards,
+      cards: cards,
       cardName: cardName
     })
   } catch (error) {
@@ -235,7 +238,8 @@ router.get('/collection/:userID/:cardName', auth, async (req, res) => {
 // ///////////////////////////////////
 router.get('/:userID/:query', auth, async (req, res) => {
   const { userID, query } = req.params;
-  console.log(query)
+
+  // Custom error handler messages 
   const message = {
     server: {
       title: 'server',
@@ -419,8 +423,6 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
   } = await req.body;
 
   const { cardID, userID } = req.params;
-
-  // let updatedCard
 
   try {
     const updatedUser = await User.updateOne(
