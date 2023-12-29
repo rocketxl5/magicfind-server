@@ -71,7 +71,8 @@ router.post('/login',
                 user: {
                     id: user.id,
                     name: user.name,
-                    email: user.email
+                    email: user.email,
+                    avatar: user.avatar
                 }
             }
 
@@ -132,12 +133,21 @@ router.post('/signup', async (req, res) => {
             return res.status(400).json(message.error.email)
         }
 
+        // Define avatar params
+        // https://css-tricks.com/snippets/javascript/random-hex-color/
+        const avatar = {
+            src: '',
+            color: Math.floor(Math.random() * 16777215).toString(16),
+            letter: name.charAt(0).toUpperCase()
+        }
+
         if (password && country) {
             const newUser = new User({
                 name,
                 email,
                 country,
                 password,
+                avatar
             })
             // Hash Password
             const salt = await bcrypt.genSalt(10);

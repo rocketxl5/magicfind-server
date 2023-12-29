@@ -419,6 +419,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
     condition,
     language,
     comment,
+    banner,
     published
   } = await req.body;
 
@@ -439,6 +440,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
           'cards.$._condition': condition,
           'cards.$._language': language,
           'cards.$._comment': comment,
+          'cards.$._is_banner': banner,
           'cards.$._is_published': published,
           'cards.$._date_published': Date.now()
         }

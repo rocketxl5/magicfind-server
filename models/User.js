@@ -23,6 +23,14 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    avatar: {
+        type: Object,
+        default: {
+            src: '',
+            color: '',
+            letter: ''
+        }
+    },
     cards: {
         type: Array,
         default: []
