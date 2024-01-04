@@ -18,7 +18,7 @@ router.get('/cardnames', async (req, res) => {
     const response = await axios.get('https://api.scryfall.com/catalog/card-names');
     const cardnames = response.data.data;
 
-    // Returns array of cardnames except cards beginning with A- (Arena cards)
+    // Returns array of cardnames excluding cards begining with A- (Arena cards)
     const filteredCardnames = cardnames.filter(cardname => {
       return /^(?!A-).*$/.test(cardname)
     });
@@ -32,6 +32,44 @@ router.get('/cardnames', async (req, res) => {
     handleFiles(fs, './data', 'cardnames.json', JSON.stringify(filteredCardnames));
 
     res.status(200).json(filteredCardnames);
+  } catch (error) {
+    throw new Error(error)
+  }
+})
+
+// Get Secret Lair Drop card set
+router.get('/feature/:query/:iteration', async (req, res) => {
+  const { query, iteration } = req.params;
+
+  // console.log(query, iteration)
+
+  try {
+    const fetchCards = async (props) => {
+      let { query, cards, isFetch } = props
+      do {
+        const response = await axios.get(query);
+        const { has_more, next_page, data } = response.data;
+        isFetch = has_more;
+        query = next_page;
+        cards = [...cards, ...data];
+      } while (isFetch)
+
+      return cards
+    }
+    let query = `https://api.scryfall.com/cards/search?include_extras=true&include_variations=true&order=set&q=e%3Asld&unique=cards`;
+    let isFetch = true;
+    let cards = []
+    const results = []
+    cards = await fetchCards({ query, cards, isFetch })
+
+    const filterCards = cards.filter(card => card.border_color === 'borderless')
+
+    for (let i = 0; i < iteration; i++) {
+      const index = Math.floor(Math.random() * filterCards.length);
+      results.push(filterCards[index]);
+    }
+
+    res.status(200).json({ results: results })
   } catch (error) {
     throw new Error(error)
   }
