@@ -21,77 +21,67 @@ router.get('/', async (req, res) => {
 ////////////////////////////
 // Sign In /////////////////
 ////////////////////////////
-router.post('/login',
-    body('email').not().isEmpty(),
-    body('password').isLength({ min: 3 }),
-    async (req, res) => {
+router.post('/login', async (req, res) => {
 
-        const errors = validationResult(req);
+    const { email, password } = await req.body;
 
-        if (!errors.isEmpty()) {
-            errors.array()
-            // return res.status(400).json({ errors: errors.array() });
+    const message = {
+        failed: {
+            type: 'error',
+            title: 'Connexion failed',
+            body: 'Incorrect username or password.'
+        },
+        server: {
+            type: 'error',
+            title: 'Server issue',
+            input: 'Server cannot process request',
+
         }
+    }
 
-        const { email, password } = await req.body;
+    try {
+        const user = await User.findOne({ email })
 
-        const message = {
-            failed: {
-                type: 'error',
-                title: 'Connexion failed',
-                body: 'Incorrect username of password.'
-            },
-            server: {
-                type: 'error',
-                title: 'Server issue',
-                input: 'Server cannot process request',
-
-            }
+        if (!user) {
+            return res.status(400).json(message.failed)
         }
 
         try {
-            const user = await User.findOne({ email })
+            const isMatch = await bcrypt.compare(password, user.password)
 
-            if (!user) {
+            if (!isMatch) {
                 return res.status(400).json(message.failed)
             }
 
-            try {
-                const isMatch = await bcrypt.compare(password, user.password)
-
-                if (!isMatch) {
-                    return res.status(400).json(message.failed)
-                }
-
-            } catch (error) {
-                throw new Error(error)
-            }
-
-            const payload = {
-                user: {
-                    id: user.id,
-                    name: user.name,
-                    email: user.email,
-                    avatar: user.avatar
-                }
-            }
-
-            jwt.sign(
-                payload,
-                process.env.ACCESS_TOKEN_SECRET,
-                { expiresIn: 36000 },
-                (error, token) => {
-                    if (error) {
-                        throw new Error(error)
-                    }
-
-                    res.status(200).json({ token, payload })
-                }
-            )
         } catch (error) {
             throw new Error(error)
         }
-    })
+
+        const payload = {
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                avatar: user.avatar
+            }
+        }
+
+        jwt.sign(
+            payload,
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: 36000 },
+            (error, token) => {
+                if (error) {
+                    throw new Error(error)
+                }
+
+                res.status(200).json({ token, payload })
+            }
+        )
+    } catch (error) {
+        throw new Error(error)
+    }
+})
 
 ////////////////////////////
 // Sign Up /////////////////
