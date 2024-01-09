@@ -8,34 +8,100 @@ const auth = require('../middleware/authorization');
 const Card = require('../models/Card');
 const User = require('../models/User');
 const ObjectId = require('mongodb').ObjectId;
-const { appendToFile } = require('../helpers/appendToFile');
 const { handleFiles } = require('../helpers/handleFiles');
-const cardProps = require('../data/cardProps');
+const skryfall = require('../data/skryfall');
 
 // Get all english card names from Skryfall API
 router.get('/cardnames', async (req, res) => {
+
+  let alchemy_cardnames = []
+  try {
+    const urls = skryfall.alchemy_sets.map(set => {
+      return `https://api.scryfall.com/cards/search?include_extras=true&include_variations=true&order=set&q=e%3${set}&unique=prints`
+    })
+
+    let cards = []
+
+    const fetchCards = async (url, isFetch, results) => {
+      do {
+        const response = await axios.get(url);
+        const { has_more, next_page, data } = response.data;
+        isFetch = has_more;
+        url = next_page;
+        results.push(...data);
+        // console.log(typeof results)
+      } while (isFetch)
+
+      return results
+    }
+
+    const promises = urls.map(async (url) => {
+      let isFetch = true;
+      const results = await fetchCards(url, isFetch, [])
+      cards = [...cards, ...results]
+    })
+
+    const resolved = await Promise.all(promises);
+
+    if (resolved) {
+
+      alchemy_cardnames = cards.map(card => card.name)
+    }
+
+  } catch (error) {
+    throw new Error(error)
+  }
+
   try {
     const response = await axios.get('https://api.scryfall.com/catalog/card-names');
     const cardnames = response.data.data;
 
     // Returns array of cardnames excluding cards begining with A- (Arena cards)
     const filteredCardnames = cardnames.filter(cardname => {
-      return /^(?!A-).*$/.test(cardname)
+      return /^(?!A-).*$/.test(cardname) && !alchemy_cardnames.includes(cardname)
     });
 
-    const repetitions = data.map((name, index) => { return { name: name, index: index } })
-      .filter(obj => { return obj.name.includes('//') })
-      .map(obj => { return { name: obj.name.split('//').map(el => el.trim()), index: obj.index } })
-      .filter(obj => { return obj.name[0].includes(obj.name[1]) });
-    repetitions.forEach(repetition => data.splice(repetition.index, 1));
+    console.log(filteredCardnames)
 
-    handleFiles(fs, './data', 'cardnames.json', JSON.stringify(filteredCardnames));
+    const searchRedundencies = async (filteredCardnames) => {
+      try {
+        const result = await filteredCardnames.map((name, index) => { return { name: name, index: index } })
+          .filter(obj => { return obj.name.includes('//') })
+          .map(obj => { return { name: obj.name.split('//').map(el => el.trim()), index: obj.index } })
+          .filter(obj => { return obj.name[0].includes(obj.name[1]) });
+        return await result;
+      } catch (error) {
+        throw new Error(error.message)
+      }
+    }
+    const removeRedundencies = async (redundencies, filteredCardnames) => {
+      await redundencies.forEach((redundency, i) => {
+        const index = redundency.index - i;
+        const spliced = filteredCardnames.splice(index, 1);
+      });
+    }
 
-    res.status(200).json(filteredCardnames);
+    searchRedundencies(filteredCardnames).then((found) => {
+      removeRedundencies(found, filteredCardnames).then(() => {
+        handleFiles(fs, './data', 'cardnames.json', JSON.stringify(filteredCardnames));
+        res.status(200).json(filteredCardnames);
+      })
+    });
   } catch (error) {
     throw new Error(error)
   }
 })
+
+// Get Skryfall API card title from data/cardnames.json
+router.get('/mtg-cardnames', async (req, res) => {
+  try {
+    const result = fs.readFileSync('./data/cardnames.json', { encoding: 'utf8' });
+    const cardNames = JSON.parse(result);
+    res.status(200).json(cardNames);
+  } catch (error) {
+    throw new Error('Cannot fetch card title from api cardnames file')
+  }
+});
 
 // Get Secret Lair Drop card set
 router.get('/feature/:query/:iteration', async (req, res) => {
@@ -74,43 +140,6 @@ router.get('/feature/:query/:iteration', async (req, res) => {
     throw new Error(error)
   }
 })
-
-// Get Skryfall API card title from data/cardnames.json
-router.get('/api-cardnames', async (req, res) => {
-  try {
-    const result = fs.readFileSync('./data/cardnames.json', { encoding: 'utf8' });
-    const cardNames = JSON.parse(result);
-
-    // Remove repeated card names with //
-    // ex: Ulamog, the ceaseless hunger // Ulamog, the ceaseless hunger
-    const searchRedundencies = async (cardNames) => {
-      try {
-        const result = await cardNames.map((name, index) => { return { name: name, index: index } })
-          .filter(obj => { return obj.name.includes('//') })
-          .map(obj => { return { name: obj.name.split('//').map(el => el.trim()), index: obj.index } })
-          .filter(obj => { return obj.name[0].includes(obj.name[1]) });
-        return await result;
-      } catch (error) {
-        throw new Error(error.message)
-      }
-    }
-    const removeRedundencies = async (redundencies, cardNames) => {
-      await redundencies.forEach((redundency, i) => {
-        const index = redundency.index - i;
-        const spliced = cardNames.splice(index, 1);
-      });
-    }
-
-    searchRedundencies(cardNames).then((found) => {
-      removeRedundencies(found, cardNames).then(() => {
-        res.status(200).json(cardNames);
-      })
-    });
-
-  } catch (error) {
-    throw new Error('Cannot fetch card title from api cardnames file')
-  }
-});
 
 // Get catalog published card names 
 router.get('/catalog', async (req, res) => {
