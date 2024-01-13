@@ -182,6 +182,7 @@ router.get('/catalog/:cardName', async (req, res) => {
         card_faces: 1,
         finishes: 1,
         image_uris: 1,
+        layout: 1,
         name: 1,
         oversized: 1,
         set_name: 1,
@@ -230,6 +231,7 @@ router.get('/catalog/:cardName/:userID', async (req, res) => {
         card_faces: 1,
         finishes: 1,
         image_uris: 1,
+        layout: 1,
         name: 1,
         oversized: 1,
         set_name: 1,
@@ -241,20 +243,6 @@ router.get('/catalog/:cardName/:userID', async (req, res) => {
     }
 
     const cards = JSON.parse(JSON.stringify(results));
-    // let userFound
-
-    // Remove user published cards
-    // const filteredCards = cards.flatMap((card, index) => {
-    //   return card._published.filter(publisedData => {
-    //     userFound = publisedData.userID === userID && true
-    //     return publisedData.userID !== userID;
-    //   })
-    // });
-
-    // // If empty
-    // if (!filteredCards.length && userFound) {
-    //   return res.status(400).json({ message: `You are currently the only seller of ${cardName} on Magic Find. If you want to see the public view of your card, go to your Dashboard or search the Magic Find Catalog once logged out`, errorType: 'single-owner' });
-    // }
 
     res.status(200).json({
       cards: cards,
@@ -365,7 +353,8 @@ router.post(
   auth,
   async (req, res) => {
     const { userID, cardID } = req.params;
-    const selectedCard = await req.body;
+    const selectedCard = req.body;
+
     const message = {
       server: {
         title: 'server',
