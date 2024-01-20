@@ -9,7 +9,46 @@ const Card = require('../models/Card');
 const User = require('../models/User');
 const ObjectId = require('mongodb').ObjectId;
 const { handleFiles } = require('../helpers/handleFiles');
-const skryfall = require('../data/skryfall');
+const skryfall = require('../data/ALCHEMY');
+const features = require('../data/FEATURES')
+
+// Get feature cards image urls
+router.get('/feature', async(req, res) => {
+  let result = []
+  const promises = features.map(async (feature, index) => {
+    const response = await axios.get(`https://api.scryfall.com/cards/search?order=set&q=e%3Asld+${feature.query}&unique=cards`);
+    const cards = response.data.data;
+    cards.forEach(card => {
+      if(card.image_uris) {
+        result.push(card.image_uris.normal)
+      }
+      if(card.card_faces) {
+        card.card_faces.forEach(card_face => {
+          result.push(card_face.image_uris.normal)
+        })
+      }
+      // else if(card.card_faces) {
+      //   card_faces.forEach(card => {
+      //     result.push(card.image_uris.normal)
+      //   })
+      // }
+      // else {
+      //   result.push(card)
+      // }
+    })
+    // const item = {title: feature.title, urls: urls, art: card}
+    // result.push(item)
+    return response;
+  })
+
+  Promise.all(promises)
+    .then(res => {
+      handleFiles(fs, './data', 'sld.json', JSON.stringify(result));
+      // res.status(200).json(result)
+    })
+    .catch((error) => { throw new Error(error) })
+})
+
 
 // Get all english card names from Skryfall API
 router.get('/cardnames', async (req, res) => {
@@ -41,7 +80,7 @@ router.get('/cardnames', async (req, res) => {
       cards = [...cards, ...results]
     })
 
-    const resolved = await Promise.all(promises);
+    const resolved = Promise.all(promises);
 
     if (resolved) {
 
@@ -122,20 +161,51 @@ router.get('/feature/:query/:iteration', async (req, res) => {
 
       return cards
     }
-    let query = `https://api.scryfall.com/cards/search?include_extras=true&include_variations=true&order=set&q=e%3Asld&unique=cards`;
+    // TOMO 77 / Absolute annihilation
+    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1424+cn≤1427&unique=cards`;
+    // Now on vhs
+    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1368+cn≤1371&unique=cards`;
+    // The baseballing
+    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1453+cn≤1457&unique=cards`;   
+    // Keep partying hard, shred harder
+    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1199+cn≤1202&unique=cards`;
+    // Buggin' out
+    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1414+cn≤1418&unique=cards`;   
+    // Bad to the bones
+    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1404+cn≤1408&unique=cards`;   
+    // Death is temporaty, Metal is forever
+    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1297+cn≤1301&unique=cards`;   
+    // Legendary flyers
+    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1195+cn≤1198&unique=cards`;   
+    // Welcome to the fungal
+    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1135+cn≤1139&unique=cards`;   
+    // Just add milk
+    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1122+cn≤1124&unique=cards`;   
+    // Tokyo lands
+    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥46+cn≤50&unique=cards`;   
+    // Totally lost
+    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+%28%28%28cn≥226+cn≤230%29+OR+cn%3A"583"%29%29&unique=cards`;   
+    // Thrilling tales of the undead
+    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥231+cn≤233&unique=cards`;   
+    // Psychedelic show
+    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥185+cn≤189&unique=cards`;   
+    // Party hard shred harder
+    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥138+cn≤142&unique=cards`;   
+    // From cute to brute
+    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1453+cn≤1457&unique=cards`;   
     let isFetch = true;
     let cards = []
     const results = []
     cards = await fetchCards({ query, cards, isFetch })
 
-    const filterCards = cards.filter(card => card.border_color === 'borderless')
+    // const filterCards = cards.filter(card => card.border_color === 'borderless')
 
-    for (let i = 0; i < iteration; i++) {
-      const index = Math.floor(Math.random() * filterCards.length);
-      results.push(filterCards[index]);
-    }
+    // for (let i = 0; i < iteration; i++) {
+    //   const index = Math.floor(Math.random() * filterCards.length);
+    //   results.push(filterCards[index]);
+    // }
 
-    res.status(200).json({ results: results })
+    res.status(200).json({ results: cards })
   } catch (error) {
     throw new Error(error)
   }
