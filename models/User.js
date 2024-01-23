@@ -42,6 +42,14 @@ const userSchema = new mongoose.Schema({
             received: []
         }
     },
+    purchases: {
+        type: Array,
+        default: []
+    },
+    sales: {
+        type: Array,
+        default: []
+    }, 
     joined: {
         type: Date,
         required: true,

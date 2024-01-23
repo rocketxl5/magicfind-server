@@ -1,5 +1,4 @@
 const fs = require('fs');
-const fsPromises = require('fs/promises');
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
@@ -10,7 +9,7 @@ const User = require('../models/User');
 const ObjectId = require('mongodb').ObjectId;
 const { handleFiles } = require('../helpers/handleFiles');
 const skryfall = require('../data/ALCHEMY');
-const features = require('../data/FEATURES')
+const features = require('../data/FEATURES');
 
 // Get feature cards image urls
 router.get('/feature', async(req, res) => {
@@ -68,27 +67,26 @@ router.get('/cardnames', async (req, res) => {
         isFetch = has_more;
         url = next_page;
         results.push(...data);
-        // console.log(typeof results)
       } while (isFetch)
 
-      return results
+      return results;
     }
 
     const promises = urls.map(async (url) => {
       let isFetch = true;
-      const results = await fetchCards(url, isFetch, [])
-      cards = [...cards, ...results]
+      const results = await fetchCards(url, isFetch, []);
+      cards = [...cards, ...results];
     })
 
     const resolved = Promise.all(promises);
 
     if (resolved) {
 
-      alchemy_cardnames = cards.map(card => card.name)
+      alchemy_cardnames = cards.map(card => card.name);
     }
 
   } catch (error) {
-    throw new Error(error)
+    throw new Error(error);
   }
 
   try {
@@ -110,7 +108,7 @@ router.get('/cardnames', async (req, res) => {
           .filter(obj => { return obj.name[0].includes(obj.name[1]) });
         return await result;
       } catch (error) {
-        throw new Error(error.message)
+        throw new Error(error.message);
       }
     }
     const removeRedundencies = async (redundencies, filteredCardnames) => {
@@ -127,7 +125,7 @@ router.get('/cardnames', async (req, res) => {
       })
     });
   } catch (error) {
-    throw new Error(error)
+    throw new Error(error);
   }
 })
 
@@ -138,7 +136,7 @@ router.get('/mtg-cardnames', async (req, res) => {
     const cardNames = JSON.parse(result);
     res.status(200).json(cardNames);
   } catch (error) {
-    throw new Error('Cannot fetch card title from api cardnames file')
+    throw new Error('Cannot fetch card title from api cardnames file');
   }
 });
 
@@ -161,49 +159,11 @@ router.get('/feature/:query/:iteration', async (req, res) => {
 
       return cards
     }
-    // TOMO 77 / Absolute annihilation
-    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1424+cn≤1427&unique=cards`;
-    // Now on vhs
-    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1368+cn≤1371&unique=cards`;
-    // The baseballing
-    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1453+cn≤1457&unique=cards`;   
-    // Keep partying hard, shred harder
-    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1199+cn≤1202&unique=cards`;
-    // Buggin' out
-    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1414+cn≤1418&unique=cards`;   
-    // Bad to the bones
-    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1404+cn≤1408&unique=cards`;   
-    // Death is temporaty, Metal is forever
-    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1297+cn≤1301&unique=cards`;   
-    // Legendary flyers
-    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1195+cn≤1198&unique=cards`;   
-    // Welcome to the fungal
-    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1135+cn≤1139&unique=cards`;   
-    // Just add milk
-    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1122+cn≤1124&unique=cards`;   
-    // Tokyo lands
-    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥46+cn≤50&unique=cards`;   
-    // Totally lost
-    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+%28%28%28cn≥226+cn≤230%29+OR+cn%3A"583"%29%29&unique=cards`;   
-    // Thrilling tales of the undead
-    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥231+cn≤233&unique=cards`;   
-    // Psychedelic show
-    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥185+cn≤189&unique=cards`;   
-    // Party hard shred harder
-    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥138+cn≤142&unique=cards`;   
-    // From cute to brute
-    // let query = `https://api.scryfall.com/cards/search?order=set&q=e%3Asld+cn≥1453+cn≤1457&unique=cards`;   
+
     let isFetch = true;
     let cards = []
     const results = []
     cards = await fetchCards({ query, cards, isFetch })
-
-    // const filterCards = cards.filter(card => card.border_color === 'borderless')
-
-    // for (let i = 0; i < iteration; i++) {
-    //   const index = Math.floor(Math.random() * filterCards.length);
-    //   results.push(filterCards[index]);
-    // }
 
     res.status(200).json({ results: cards })
   } catch (error) {
@@ -256,7 +216,8 @@ router.get('/catalog/:cardName', async (req, res) => {
         name: 1,
         oversized: 1,
         set_name: 1,
-        _published: 1
+        _published: 1,
+        _uuid: 1
       });
 
     if (!results.length) {
@@ -305,7 +266,8 @@ router.get('/catalog/:cardName/:userID', async (req, res) => {
         name: 1,
         oversized: 1,
         set_name: 1,
-        _published: 1
+        _published: 1,
+        _uuid: 1
       });
 
     if (!results.length) {
@@ -414,10 +376,10 @@ router.get('/:userID/:query', auth, async (req, res) => {
   }
 });
 
-// //////////////////////////
-// Add Card To User Store ///
-// Add User To Card Owners //
-// //////////////////////////
+// //////////////////////////////
+// Add Card To User Collection //
+// Add User To Card Owners //////
+// //////////////////////////////
 router.post(
   '/add/:userID/:cardID',
   auth,
@@ -546,10 +508,12 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
     language,
     comment,
     banner,
-    published
+    published,
   } = await req.body;
 
   const { cardID, userID } = req.params;
+
+
 
   try {
     const updatedUser = await User.updateOne(

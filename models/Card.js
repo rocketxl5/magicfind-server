@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const crypto = require('crypto');
 
 const cardSchema = new mongoose.Schema({
   artist: {
@@ -160,6 +161,10 @@ const cardSchema = new mongoose.Schema({
   type_line: {
     type: String,
     default: ''
+  },
+  _uuid: {
+    type: String,
+    default: crypto.randomUUID()
   },
   _owners: {
     type: Array,
