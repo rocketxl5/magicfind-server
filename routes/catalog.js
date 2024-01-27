@@ -7,6 +7,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const ObjectId = require('mongodb').ObjectId;
 const Card = require('../models/Card');
+const User = require('../models/User');
 const { handleFiles } = require('../helpers/handleFiles');
 
 // SearchCatalog request
@@ -44,23 +45,20 @@ router.get('/:cardName', async (req, res) => {
   }
 });
 
-router.get('/:cardName/:cardID/:quantity', async (req, res) => {
-  let { cardName, cardID, quantity } = req.params;
-  console.log('quantity', quantity);
-  let isQuantityAvailable = true;
+router.get('/:userID/:cardID/:quantity', async (req, res) => {
+  let { userID, cardID, quantity } = req.params;
+  console.log(quantity)
   try {
-    let card = await Card.findOne({
-      _id: cardID
+    let user = await User.findOne({
+      _id: userID
     });
 
-    console.log(card.quantity);
-    if (quantity > card.quantity) {
-      isQuantityAvailable = false;
+    const card = user.cards.find(card => ObjectId(cardID).equals(card._id))
+    if (card) {
+      const isAvailable = (card._quantity - parseInt(quantity)) ? true : false;
+      res.status(200).json({ isAvailable: isAvailable, card: card });
     }
 
-    console.log(card)
-
-    res.status(200).json({ isQuantityAvailable, card });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

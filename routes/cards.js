@@ -547,7 +547,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
       return res.status(400).json({ message: 'Could not retrieve user data' });
     }
 
-    const { name, email } = user;
+    const { name, email, country } = user;
 
     // If update is publish
     if (published) {
@@ -567,7 +567,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
           },
           {
             $push: {
-              _published: { userID, userName: name, email, price, quantity, language, condition, comment }
+              _published: { userID, userName: name, email, country, price, quantity, language, condition, comment }
             }
           })
         }
@@ -582,6 +582,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
               $set: {
                 '_published.$.userName': name,
                 '_published.$.userEmail': email,
+                '_published.$.userCountry': country,
                 '_published.$.price': price,
                 '_published.$.quantity': quantity,
                 '_published.$.condition': condition,
