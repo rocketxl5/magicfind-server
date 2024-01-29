@@ -23,7 +23,7 @@ router.get('/:cardName', async (req, res) => {
   const token = req.headers.authorization;
 
   if (token) {
-    const verified = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const verified = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     verifiedUserID = verified.user.id
   }
 
@@ -47,18 +47,20 @@ router.get('/:cardName', async (req, res) => {
 
 router.get('/:userID/:cardID/:quantity', async (req, res) => {
   let { userID, cardID, quantity } = req.params;
-  console.log(quantity)
-  console.log(userID)
-  console.log(cardID)
+  // console.log(quantity)
+  // console.log(userID)
+  // console.log(cardID)
   try {
     let user = await User.findOne({
       _id: userID
     });
 
-    const card = user.cards.find(card => ObjectId(cardID).equals(card._id))
-    console.log(card)
+    const card = user.cards.find(card => {
+      return card._id.equals(ObjectId(cardID));
+    })
 
     if (card) {
+      // Check if quantity selected is available
       const isAvailable = (card._quantity - parseInt(quantity) >= 0) ? true : false;
       res.status(200).json({ isAvailable: isAvailable, card: card });
     }

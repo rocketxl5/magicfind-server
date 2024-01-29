@@ -31,6 +31,10 @@ const userSchema = new mongoose.Schema({
             letter: ''
         }
     },
+    cart: {
+        type: Array,
+        defautl: []
+    },
     cards: {
         type: Array,
         default: []
