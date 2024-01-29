@@ -197,6 +197,55 @@ router.get('/catalog', async (req, res) => {
 // /////////////////
 // Search Catalog //
 // /////////////////
+router.get('/catalog/:cardName', async (req, res) => {
+  const { cardName, userID } = req.params;
+  const page = req.query.page || 0;
+  const cardsPerPage = 10;
+
+  try {
+    const results = await Card.find(
+      {
+        name: cardName,
+        _published: { $ne: [] }
+      },
+      {
+        card_faces: 1,
+        finishes: 1,
+        image_uris: 1,
+        layout: 1,
+        name: 1,
+        oversized: 1,
+        set_name: 1,
+        _published: 1,
+        _uuid: 1
+      });
+
+    if (!results.length) {
+      return res.status(400).json({ message: `No result for ${cardName}`, cardName: cardName })
+    }
+
+    const cards = JSON.parse(JSON.stringify(results));
+    const publishedCards = [];
+
+    cards.forEach((card) => {
+      card._published.forEach((data) => {
+        const { _published, ...rest } = card;
+        publishedCards.push(Object.assign(rest, data));
+      })
+    });
+
+    res.status(200).json({
+      cards: publishedCards,
+      cardName: cardName
+    })
+  } catch (error) {
+    return res.status(400).json({ message: error.message })
+  }
+})
+
+// /////////////////
+// Search Catalog //
+// /////////////////
 router.get('/catalog/:cardName/:userID', async (req, res) => {
   const { cardName, userID } = req.params;
   const page = req.query.page || 0;
@@ -224,18 +273,12 @@ router.get('/catalog/:cardName/:userID', async (req, res) => {
       return res.status(400).json({ message: `No result for ${cardName}`, cardName: cardName })
     }
 
-
-
-    let cards = JSON.parse(JSON.stringify(results));
-    // If userID is defined
-    if (userID) {
-      // Remove user cards
-      cards = cards.filter((card) => !card._published.includes(userID))
-    }
+    const cards = JSON.parse(JSON.stringify(results));
+    const filterCards = cards.filter((card) => !card._published.includes(userID))
 
     const publishedCards = [];
 
-    cards.forEach((card) => {
+    filterCards.forEach((card) => {
       card._published.forEach((data) => {
         const { _published, ...rest } = card;
         publishedCards.push(Object.assign(rest, data));
