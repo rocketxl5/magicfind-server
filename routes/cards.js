@@ -98,8 +98,6 @@ router.get('/cardnames', async (req, res) => {
       return /^(?!A-).*$/.test(cardname) && !alchemy_cardnames.includes(cardname)
     });
 
-    console.log(filteredCardnames)
-
     const searchRedundencies = async (filteredCardnames) => {
       try {
         const result = await filteredCardnames.map((name, index) => { return { name: name, index: index } })
@@ -143,8 +141,6 @@ router.get('/mtg-cardnames', async (req, res) => {
 // Get Secret Lair Drop card set
 router.get('/feature/:query/:iteration', async (req, res) => {
   const { query, iteration } = req.params;
-
-  // console.log(query, iteration)
 
   try {
     const fetchCards = async (props) => {
@@ -434,7 +430,6 @@ router.post(
         } else {
 
           await newCard.save();
-          console.log(newCard._id)
         }
       }
     } catch (error) {
@@ -660,9 +655,10 @@ router.delete('/delete', auth, async (req, res) => {
     const card = await Card.findOneAndUpdate(
       { _id: ObjectId(cardID) },
       {
-        // Remove user form card _owners
+        // Remove user from card _owners & card _published
         $pull: {
-          _owners: { id: userID }
+          _owners: { userID: userID },
+          _published: { userID: userID }
         }
       }
     );
