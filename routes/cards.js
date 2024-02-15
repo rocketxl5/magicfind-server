@@ -176,15 +176,13 @@ router.get('/catalog', async (req, res) => {
     )
     // const data = await fsPromises.readFile('./data/cardcatalog.json', { encoding: 'utf8' });
 
-    cardNames = publishedCards.map(card => {
+    results = publishedCards.map(card => {
       return card.name
     }).filter((name, index, array) => {
       return array.indexOf(name) === index;
     });
 
-    res.status(200).json({
-      cards: cardNames
-    });
+    res.status(200).json(results);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

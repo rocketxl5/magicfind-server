@@ -10,7 +10,7 @@ const Card = require('../models/Card');
 const User = require('../models/User');
 const { handleFiles } = require('../helpers/handleFiles');
 
-// SearchCatalog request
+// Catalog request
 // Get all cards in Magic Find catalog where catalog card name === cardName
 router.get('/:cardName', async (req, res) => {
   if (!req.params.cardName) {
