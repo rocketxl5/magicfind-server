@@ -362,22 +362,22 @@ router.get('/:userID/:query', auth, async (req, res) => {
       return res.status(400).json({ message: message.noCards })
     }
 
-    let data
+    let results
 
     // If query is for card names
-    if (query === 'card-names') {
+    if (query === 'cardnames') {
       // Remove card names duplicates
-      data = cards.map(card => {
+      results = cards.map(card => {
         return card.name
       }).filter((name, index, array) => {
         return array.indexOf(name) === index;
       })
     }
     else if (query === 'cards') {
-      data = cards
+      results = cards
     }
 
-    res.status(200).json({ query, data });
+    res.status(200).json(results);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -393,7 +393,8 @@ router.post(
   async (req, res) => {
     const { userID, cardID } = req.params;
     const selectedCard = req.body;
-
+    console.log(userID)
+    console.log(cardID)
     const message = {
       server: {
         title: 'server',
@@ -468,7 +469,7 @@ router.post(
     }
 
     try {
-      // Add user id to card owner array property
+      // Add user id to card specifications array property
       Card.updateOne(
         {
           _id: ObjectId(newCard._id)

@@ -23,18 +23,6 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    avatar: {
-        type: Object,
-        default: {
-            src: '',
-            color: '',
-            letter: ''
-        }
-    },
-    cart: {
-        type: Array,
-        defautl: []
-    },
     cards: {
         type: Array,
         default: []
@@ -54,6 +42,26 @@ const userSchema = new mongoose.Schema({
         type: Array,
         default: []
     }, 
+    cart: {
+        type: Array,
+        defautl: []
+    },
+    wishlist: {
+        type: Array,
+        defautl: []
+    },
+    rating: {
+        type: Number,
+        defautl: 0
+    },
+    avatar: {
+        type: Object,
+        default: {
+            src: '',
+            color: '',
+            letter: ''
+        }
+    },
     joined: {
         type: Date,
         required: true,

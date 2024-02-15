@@ -47,9 +47,6 @@ router.get('/:cardName', async (req, res) => {
 
 router.get('/:userID/:cardID/:quantity', async (req, res) => {
   let { userID, cardID, quantity } = req.params;
-  // console.log(quantity)
-  // console.log(userID)
-  // console.log(cardID)
   try {
     let user = await User.findOne({
       _id: userID
