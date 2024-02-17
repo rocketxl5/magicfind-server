@@ -325,6 +325,42 @@ router.get('/collection/:userID/:cardName', auth, async (req, res) => {
   }
 });
 
+
+// ///////////////////////////////////
+// Search Collection by Card Name ////
+// ///////////////////////////////////
+router.get('/collection/:userID/:cardName', auth, async (req, res) => {
+
+  const { userID, cardName } = req.params;
+
+  if (cardName === '') {
+    return res.status(400).json({ msg: 'Field is empty' });
+  }
+
+  try {
+    let user = await User.findOne({ _id: ObjectId(userID) });
+
+    if (!user) {
+      return res.status(400).send('User does not exist');
+    }
+
+    // Search for a card with cardName
+    const found = user.cards.find(card => card.name === cardName);
+
+    if (!found) {
+      return res.status(400).json({ message: `No result for ${cardName}`, cardName: cardName })
+    }
+
+    const cards = user.cards.filter((card) => {
+      return card.name.toLowerCase() === cardName.toLowerCase();
+    });
+
+    res.status(200).json({ cards, cardName });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // ///////////////////////////////////
 // Search Collection by User ID //////
 // ///////////////////////////////////
@@ -391,8 +427,8 @@ router.post(
   async (req, res) => {
     const { userID, cardID } = req.params;
     const selectedCard = req.body;
-    console.log(userID)
-    console.log(cardID)
+    // console.log(userID)
+    // console.log(cardID)
     const message = {
       server: {
         title: 'server',
@@ -479,7 +515,7 @@ router.post(
         },
         () => console.log(`${userID} successfully added to owners`))
 
-      // Convert mongoose to js object
+      // Convert mongoose object to js object
       // Remove owners & published properties
       const { _owners, _published, ...rest } = newCard.toObject();
 
