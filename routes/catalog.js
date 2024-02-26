@@ -59,7 +59,7 @@ router.get('/:userID/:cardID/:quantity', async (req, res) => {
     if (card) {
       // Check if quantity selected is available
       const isAvailable = (card._quantity - parseInt(quantity) >= 0) ? true : false;
-      res.status(200).json({ isAvailable: isAvailable, card: card });
+      res.status(200).json({ isAvailable: isAvailable });
     }
 
   } catch (err) {

@@ -669,7 +669,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
 // //////////////////////////////////////////////
 router.delete('/delete', auth, async (req, res) => {
   const { cardID, userID } = await req.body;
-
+  console.log(cardID)
   try {
     let user = await User.findOneAndUpdate(
       { _id: ObjectId(userID) },
