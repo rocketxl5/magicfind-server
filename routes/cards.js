@@ -191,6 +191,8 @@ router.get('/catalog', async (req, res) => {
 // /////////////////
 // Search Catalog //
 // /////////////////
+
+// Get catalog cards by card name
 router.get('/catalog/:cardName', async (req, res) => {
   const { cardName, userID } = req.params;
   const page = req.query.page || 0;
@@ -588,7 +590,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
       return res.status(400).json({ message: 'Could not retrieve user data' });
     }
 
-    const { name, email, country } = user;
+    const { name, email, country, avatar, rating } = user;
 
     // If update is publish
     if (published) {
@@ -608,7 +610,19 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
           },
           {
             $push: {
-              _published: { userID, userName: name, email, country, price, quantity, language, condition, comment }
+              _published: {
+                userID,
+                userName: name,
+                avatar,
+                rating,
+                email,
+                country,
+                price,
+                quantity,
+                language,
+                condition,
+                comment
+              }
             }
           })
         }
@@ -623,6 +637,8 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
               $set: {
                 '_published.$.userName': name,
                 '_published.$.userEmail': email,
+                '_published.$.avatar': avatar,
+                '_published.$.rating': rating,
                 '_published.$.userCountry': country,
                 '_published.$.price': price,
                 '_published.$.quantity': quantity,
