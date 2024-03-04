@@ -62,7 +62,8 @@ router.post('/login', async (req, res) => {
                 id: user.id,
                 name: user.name,
                 email: user.email,
-                avatar: user.avatar
+                avatar: user.avatar,
+                rating: user.rating
             }
         }
 
@@ -88,7 +89,7 @@ router.post('/login', async (req, res) => {
 ////////////////////////////
 router.post('/signup', async (req, res) => {
 
-    const { name, email, country, password } = await req.body
+    const { name, email, country, password } = req.body
     const message = {
         success: {
             type: 'success',
@@ -103,6 +104,7 @@ router.post('/signup', async (req, res) => {
             country: 'Please select a country'
         }
     }
+    console.log(req.body)
 
     try {
         // Check if name is available
@@ -131,13 +133,18 @@ router.post('/signup', async (req, res) => {
             letter: name.charAt(0).toUpperCase()
         }
 
+        console.log(avatar)
+
+        const rating = 0;
+
         if (password && country) {
             const newUser = new User({
                 name,
                 email,
                 country,
                 password,
-                avatar
+                avatar,
+                rating
             })
             // Hash Password
             const salt = await bcrypt.genSalt(10);

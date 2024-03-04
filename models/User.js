@@ -44,15 +44,15 @@ const userSchema = new mongoose.Schema({
     }, 
     cart: {
         type: Array,
-        defautl: []
+        default: []
     },
     wishlist: {
         type: Array,
-        defautl: []
+        default: []
     },
     rating: {
         type: Number,
-        defautl: 0
+        default: 0
     },
     avatar: {
         type: Object,

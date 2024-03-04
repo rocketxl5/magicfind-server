@@ -611,12 +611,14 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
           {
             $push: {
               _published: {
-                userID,
-                userName: name,
-                avatar,
-                rating,
-                email,
-                country,
+                seller: {
+                  userID,
+                  userName: name,
+                  avatar,
+                  rating,
+                  email,
+                  country,
+                },
                 price,
                 quantity,
                 language,
