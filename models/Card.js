@@ -173,6 +173,10 @@ const cardSchema = new mongoose.Schema({
   _published: {
     type: Array,
     default: []
+  },
+  _views: {
+    type: Number,
+    default: 0
   }
 });
 
