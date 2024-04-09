@@ -237,7 +237,7 @@ router.get('/catalog/:cardName', async (req, res) => {
   } catch (error) {
     return res.status(400).json({ message: error.message })
   }
-})
+});
 
 // /////////////////
 // Search Catalog //
@@ -329,62 +329,10 @@ router.get('/collection/:userID/:cardName', auth, async (req, res) => {
 
 
 // ///////////////////////////////////
-// Search Collection by Card Name ////
-// ///////////////////////////////////
-// router.get('/collection/:userID/:cardName', auth, async (req, res) => {
-
-//   const { userID, cardName } = req.params;
-
-//   if (cardName === '') {
-//     return res.status(400).json({ msg: 'Field is empty' });
-//   }
-
-//   try {
-//     let user = await User.findOne({ _id: ObjectId(userID) });
-
-//     if (!user) {
-//       return res.status(400).send('User does not exist');
-//     }
-
-//     // Search for a card with cardName
-//     const found = user.cards.find(card => card.name === cardName);
-
-//     if (!found) {
-//       return res.status(400).json({ message: `No result for ${cardName}`, cardName: cardName })
-//     }
-
-//     const cards = user.cards.filter((card) => {
-//       return card.name.toLowerCase() === cardName.toLowerCase();
-//     });
-
-//     res.status(200).json({ cards, cardName });
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// });
-
-// ///////////////////////////////////
 // Search Collection by User ID //////
 // ///////////////////////////////////
 router.get('/:userID', auth, async (req, res) => {
   const { userID, query } = req.params;
-
-  // Custom error handler messages
-  // const message = {
-  //   server: {
-  //     title: 'server',
-  //     body: 'Card could Not Be Added'
-
-  //   },
-  //   notFound: {
-  //     title: 'not_found',
-  //     body: 'No User Found'
-  //   },
-  //   noCards: {
-  //     title: 'no_cards',
-  //     body: ['Your collection is currently empty.', 'Go to the Add Card page to start adding cards to your collection.']
-  //   }
-  // };
 
   try {
     const user = await User.findOne({ _id: ObjectId(userID) });

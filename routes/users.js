@@ -162,7 +162,23 @@ router.post('/signup', async (req, res) => {
     } catch (error) {
         throw new Error(error)
     }
-})
+});
 
+////////////////////////////
+// User Store //////////////
+////////////////////////////
+router.get('/store/:userID', async (req, res) => {
+    const { userID } = req.params;
+    try {
+        const user = await User.findOne({ _id: userID })
+
+        if (user) {
+            console.log(user)
+            res.status(200).json(user)
+        }
+    } catch (error) {
+        throw new Error(error)
+    }
+})
 
 module.exports = router;
