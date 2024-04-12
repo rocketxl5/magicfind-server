@@ -211,7 +211,12 @@ router.get('/catalog/:cardName', async (req, res) => {
         layout: 1,
         name: 1,
         oversized: 1,
+        oracle_text: 1,
+        released_at: 1,
+        set: 1,
         set_name: 1,
+        set_uri: 1,
+        type_line: 1,
         _published: 1,
         _uuid: 1
       });
@@ -255,12 +260,18 @@ router.get('/catalog/:cardName/:userID', async (req, res) => {
       },
       {
         card_faces: 1,
+        card_faces: 1,
         finishes: 1,
         image_uris: 1,
         layout: 1,
         name: 1,
         oversized: 1,
+        oracle_text: 1,
+        released_at: 1,
+        set: 1,
         set_name: 1,
+        set_uri: 1,
+        type_line: 1,
         _published: 1,
         _uuid: 1
       });
@@ -326,7 +337,6 @@ router.get('/collection/:userID/:cardName', auth, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
 
 // ///////////////////////////////////
 // Search Collection by User ID //////
