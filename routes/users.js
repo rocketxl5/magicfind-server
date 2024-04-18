@@ -104,7 +104,6 @@ router.post('/signup', async (req, res) => {
             country: 'Please select a country'
         }
     }
-    console.log(req.body)
 
     try {
         // Check if name is available
@@ -132,8 +131,6 @@ router.post('/signup', async (req, res) => {
             color: Math.floor(Math.random() * 16777215).toString(16),
             letter: name.charAt(0).toUpperCase()
         }
-
-        console.log(avatar)
 
         const rating = 0;
 
@@ -173,13 +170,12 @@ router.get('/store/:userID', async (req, res) => {
         const user = await User.findOne({ _id: userID })
 
         if (user) {
-            console.log(user)
             const publishedCards = user.cards.filter(card => card._is_published)
             res.status(200).json(publishedCards)
         }
     } catch (error) {
         throw new Error(error)
     }
-})
+});
 
 module.exports = router;

@@ -299,8 +299,7 @@ router.get('/catalog/:cardName/:userID', async (req, res) => {
   } catch (error) {
     return res.status(400).json({ message: error.message })
   }
-})
-
+});
 
 
 // ///////////////////////////////////
@@ -339,9 +338,9 @@ router.get('/collection/:userID/:cardName', auth, async (req, res) => {
 });
 
 // ///////////////////////////////////
-// Search Collection by User ID //////
+// Get Collection by User ID /////////
 // ///////////////////////////////////
-router.get('/:userID', auth, async (req, res) => {
+router.get('/collection/:userID', auth, async (req, res) => {
   const { userID, query } = req.params;
 
   try {
@@ -374,7 +373,8 @@ router.get('/:userID', auth, async (req, res) => {
     // else if (query === 'cards') {
     //   results = cards
     // }
-
+    
+    // Returns card collection and cardNames
     res.status(200).json({ cards: cards, cardNames: cardNames });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -391,8 +391,7 @@ router.post(
   async (req, res) => {
     const { userID, cardID } = req.params;
     const selectedCard = req.body;
-    // console.log(userID)
-    // console.log(cardID)
+
     const message = {
       server: {
         title: 'server',
