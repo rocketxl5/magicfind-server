@@ -174,7 +174,8 @@ router.get('/store/:userID', async (req, res) => {
 
         if (user) {
             console.log(user)
-            res.status(200).json(user)
+            const publishedCards = user.cards.filter(card => card._is_published)
+            res.status(200).json(publishedCards)
         }
     } catch (error) {
         throw new Error(error)
