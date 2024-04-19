@@ -519,8 +519,6 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
 
   const { cardID, userID } = req.params;
 
-
-
   try {
     const updatedUser = await User.updateOne(
       {
@@ -557,13 +555,14 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
 
     // If update is published
     if (published) {
-
       try {
         // Search for existing document.
         const doc = await Card.findOne({
           _id: ObjectId(cardID),
-          '_published.userID': userID
+          '_published.seller.userID': userID
         })
+
+        console.log(doc)
         // If it does not exist
         if (!doc) {
           // Create document
@@ -593,11 +592,11 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
           })
         }
         else {
-          // Else, update existing document
+          // Update existing document
           await Card.updateOne(
             {
               _id: ObjectId(cardID),
-              '_published.userID': userID
+              '_published.seller.userID': userID
             },
             {
               $set: {
