@@ -695,9 +695,7 @@ router.delete('/delete', auth, async (req, res) => {
     }
 
     res.status(200).json({
-      cards: user.cards,
-      isDeleted: true,
-      message: 'Card successfully deleted',
+      cards: user.cards
     });
   } catch (error) {
     res.status(500).json(error.message);
