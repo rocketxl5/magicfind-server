@@ -521,7 +521,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
   } = await req.body;
 
   const { cardID, userID } = req.params;
-
+  console.log(publishedID)
   try {
     const updatedUser = await User.updateOne(
       {
@@ -530,7 +530,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
       },
       {
         $set: {
-          'cards.$.publishedID': publishedID,
+          // 'cards.$.publishedID': publishedID,
           'cards.$.cardName': cardName,
           'cards.$._price': price,
           'cards.$._quantity': quantity,
@@ -539,6 +539,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
           'cards.$._comment': comment,
           'cards.$._is_banner': banner,
           'cards.$._is_published': published,
+          'cards.$._published_id': publishedID,
           'cards.$._date_published': datePublished
         }
       }
@@ -568,8 +569,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
         console.log(doc)
         // If it does not exist
         if (!doc) {
-
-          const publishedID = crypto.randomUUID();
+          console.log('does not exist')
           // Create document
           const publishCard = await Card.updateOne(
           {
