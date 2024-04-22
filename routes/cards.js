@@ -7,6 +7,7 @@ const auth = require('../middleware/authorization');
 const Card = require('../models/Card');
 const User = require('../models/User');
 const ObjectId = require('mongodb').ObjectId;
+const crypto = require('crypto');
 const { handleFiles } = require('../helpers/handleFiles');
 const skryfall = require('../data/ALCHEMY');
 const features = require('../data/FEATURES');
@@ -391,6 +392,7 @@ router.post(
   async (req, res) => {
     const { userID, cardID } = req.params;
     const selectedCard = req.body;
+    console.log(selectedCard)
 
     const message = {
       server: {
@@ -413,10 +415,11 @@ router.post(
 
     let newCard
 
+    // Check if card already exists in card catalog
     try {
 
       newCard = await Card.findOne({ id: cardID });
-
+      // If not, add card card catalog
       if (!newCard) {
 
         newCard = new Card(selectedCard);
@@ -426,7 +429,6 @@ router.post(
             .status(400)
             .json({ message: message.server });
         } else {
-
           await newCard.save();
         }
       }
@@ -434,8 +436,8 @@ router.post(
       throw new Error(error)
     }
 
-    try {
 
+    try {
       const user = await User.findOne({ _id: ObjectId(userID) });
 
       if (!user) {
@@ -443,6 +445,7 @@ router.post(
       }
 
       // Validation function
+      // Check if card already exist in user collection
       const isFound = async (user, cardID) => {
         try {
           const cards = user.cards;
@@ -514,7 +517,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
     banner,
     published,
     datePublished,
-    itemID
+    publishedID
   } = await req.body;
 
   const { cardID, userID } = req.params;
@@ -527,7 +530,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
       },
       {
         $set: {
-          'cards.$.cardID': cardID,
+          'cards.$.publishedID': publishedID,
           'cards.$.cardName': cardName,
           'cards.$._price': price,
           'cards.$._quantity': quantity,
@@ -559,12 +562,14 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
         // Search for existing document.
         const doc = await Card.findOne({
           _id: ObjectId(cardID),
-          '_published.seller.userID': userID
+          '_published.publishedID': publishedID
         })
 
         console.log(doc)
         // If it does not exist
         if (!doc) {
+
+          const publishedID = crypto.randomUUID();
           // Create document
           const publishCard = await Card.updateOne(
           {
@@ -586,7 +591,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
                 language,
                 condition,
                 comment,
-                itemID
+                publishedID
               }
             }
           })
@@ -596,7 +601,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
           await Card.updateOne(
             {
               _id: ObjectId(cardID),
-              '_published.seller.userID': userID
+              '_published.publishedID': publishedID
             },
             {
               $set: {
@@ -623,11 +628,11 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
       try {
         await Card.updateOne(
           {
-            _id: ObjectId(cardID)
+            _id: ObjectId(cardID),
           },
           {
             $pull: {
-              _published: { itemID: itemID }
+              _published: { publishedID: publishedID }
             }
           })
       } catch (error) {

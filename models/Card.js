@@ -162,10 +162,6 @@ const cardSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  _uuid: {
-    type: String,
-    default: crypto.randomUUID()
-  },
   _owners: {
     type: Array,
     default: []
