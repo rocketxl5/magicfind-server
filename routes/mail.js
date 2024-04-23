@@ -222,7 +222,7 @@ router.get('/sent/:userID', auth, async (req, res) => {
 // Get unread messages
 router.get('/unread/:userID', auth, async (req, res) => {
   const { userID } = req.params;
-  console.log('in unread')
+
   try {
     let user = await User.findOne({ _id: ObjectId(userID) });
 
