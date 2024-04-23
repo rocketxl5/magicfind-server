@@ -28,14 +28,14 @@ const dynoWaker = wokeDyno(SELF_URL);
 const usersRouter = require('./routes/users.js');
 const cardsRouter = require('./routes/cards.js');
 const conversationsRouter = require('./routes/conversations.js');
-const messagesRouter = require('./routes/messages.js');
+const mailRouter = require('./routes/mail.js');
 const catalogRouter = require('./routes/catalog.js');
 const cartRouter = require('./routes/cart.js');
 
 app.use('/api/users', usersRouter);
 app.use('/api/cards', cardsRouter);
 app.use('/api/conversations', conversationsRouter);
-app.use('/api/messages', messagesRouter);
+app.use('/api/mail', mailRouter);
 app.use('/api/catalog', catalogRouter);
 app.use('/api/cart', cartRouter);
 

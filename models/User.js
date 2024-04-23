@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
         type: Array,
         default: []
     },
-    messages: {
+    mail: {
         type: Object,
         default: {
             sent: [],

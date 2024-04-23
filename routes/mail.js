@@ -142,11 +142,11 @@ router.post(
 );
 
 // Get messages from user inbox
-router.get('/inbox/:userID', auth, async (req, res) => {
-  const { userID } = await req.params;
+router.get('/:userID', auth, async (req, res) => {
+  const { userID } = req.params;
 
   try {
-    let user = await User.findOne({ _id: userID });
+    let user = await User.findOne({ _id: ObjectId(userID) });
 
     if (!user) {
       return res.status(400).json({
@@ -155,26 +155,26 @@ router.get('/inbox/:userID', auth, async (req, res) => {
     }
 
     // Get received messages
-    let messages = await user.messages.received;
+    let inMail = await user.mail.received;
     // console.log(messages);
-    if (!messages) {
+    if (!inMail) {
       return res
         .status(400)
         .json({ message: 'User messagers could not be retrieved' });
     }
 
     // Get received messages excluding trashed messages
-    const filteredMessages = messages.filter((message) => {
+    const filteredMail = inMail.filter((message) => {
       return !message.isTrash;
     });
 
     // console.log(filteredMessages);
 
-    const sortedMessages = filteredMessages.sort((a, b) => {
+    const sortedMail = filteredMail.sort((a, b) => {
       return b.date - a.date;
     });
 
-    res.status(200).json({ data: sortedMessages });
+    res.status(200).json({ data: sortedMail });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -182,7 +182,7 @@ router.get('/inbox/:userID', auth, async (req, res) => {
 
 // Get messages from user sent box
 router.get('/sent/:userID', auth, async (req, res) => {
-  const { userID } = await req.params;
+  const { userID } = req.params;
 
   try {
     let user = await User.findOne({ _id: userID });
@@ -194,37 +194,37 @@ router.get('/sent/:userID', auth, async (req, res) => {
     }
 
     // Get messages sent
-    let messages = await user.messages.sent;
+    let outMail = await user.mail.sent;
 
-    if (!messages) {
+    if (!outMail) {
       return res
         .status(400)
         .json({ message: 'User messagers could not be retrieved' });
     }
 
     // Get received messages excluding trashed messages
-    const filteredMessages = messages.filter((message) => {
+    const filteredMail = outMail.filter((message) => {
       return !message.isTrash;
     });
 
     // console.log(filteredMessages);
 
-    const sortedMessages = filteredMessages.sort((a, b) => {
+    const sortedMail = filteredMail.sort((a, b) => {
       return b.date - a.date;
     });
 
-    res.status(200).json({ data: sortedMessages });
+    res.status(200).json({ data: sortedMail });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Get messages from unread messages from inbox
-router.get('/unread/:userID', auth, async (req, res) => {
-  const { userID } = await req.params;
-
+// Get unread messages
+router.get('/unread/:userID', async (req, res) => {
+  const { userID } = req.params;
+  console.log('in unread')
   try {
-    let user = await User.findOne({ _id: userID });
+    let user = await User.findOne({ _id: ObjectId(userID) });
 
     if (!user) {
       return res.status(400).json({
@@ -232,17 +232,17 @@ router.get('/unread/:userID', auth, async (req, res) => {
       });
     }
 
-    let messages = await user.messages.received;
+    let inMail = await user.mail.received;
 
-    const filteredMessages = messages.filter((message) => {
+    const filteredMail = inMail.filter((message) => {
       return !message.isRead && !message.isTrash;
     });
 
-    const sortedMessages = filteredMessages.sort((a, b) => {
+    const sortedMail = filteredMail.sort((a, b) => {
       return b.date - a.date;
     });
 
-    res.status(200).json({ data: sortedMessages });
+    res.status(200).json({ data: sortedMail });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -250,10 +250,10 @@ router.get('/unread/:userID', auth, async (req, res) => {
 
 // Get messages from user trash bin
 router.get('/trash/:userID', auth, async (req, res) => {
-  const { userID } = await req.params;
+  const { userID } = req.params;
 
   try {
-    let user = await User.findOne({ _id: userID });
+    let user = await User.findOne({ _id: ObjectId(userID) });
 
     if (!user) {
       return res.status(400).json({
@@ -261,23 +261,23 @@ router.get('/trash/:userID', auth, async (req, res) => {
       });
     }
 
-    const receivedMessages = await user.messages.received.filter((message) => {
+    const inMail = await user.mail.received.filter((message) => {
       return message.isTrash;
     });
 
-    const sentMessages = await user.messages.sent.filter((message) => {
+    const outMail = await user.mail.sent.filter((message) => {
       return message.isTrash;
     });
 
-    const messages = [];
-    messages.push(...receivedMessages);
-    messages.push(...sentMessages);
+    const mail = [];
+    mail.push(...inMail);
+    mail.push(...outMail);
 
-    sortedMessages = messages.sort((a, b) => {
+    sortedMail = mail.sort((a, b) => {
       return b.date - a.date;
     });
 
-    res.status(200).json({ data: sortedMessages });
+    res.status(200).json({ data: sortedMail });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -288,7 +288,7 @@ router.patch('/', auth, async (req, res) => {
   const { userID, trashed, path } = await req.body;
 
   try {
-    const user = await User.findOne({ _id: userID });
+    const user = await User.findOne({ _id: ObjectId(userID) });
 
     if (!user) {
       return res.status(400).json({
@@ -298,7 +298,7 @@ router.patch('/', auth, async (req, res) => {
 
     let messages = [];
     if (path === 'inbox') {
-      messages = user.messages.received;
+      messages = user.mail.received;
 
       trashed.forEach((trashedMessage) => {
         messages.forEach((message) => {
@@ -311,12 +311,12 @@ router.patch('/', auth, async (req, res) => {
       const updatedUser = await User.updateOne(
         { _id: userID },
         {
-          $set: { 'messages.received': messages }
+          $set: { 'mail.received': messages }
         }
       );
     }
     if (path === 'sent') {
-      messages = user.messages.sent;
+      messages = user.mail.sent;
 
       trashed.forEach((trashedMessage) => {
         messages.forEach((message) => {
@@ -329,7 +329,7 @@ router.patch('/', auth, async (req, res) => {
       const updatedUser = await User.updateOne(
         { _id: userID },
         {
-          $set: { 'messages.sent': messages }
+          $set: { 'mail.sent': messages }
         }
       );
     }
@@ -353,7 +353,7 @@ router.delete('/delete', auth, async (req, res) => {
   const { userID, toBeDeleted } = await req.body;
 
   try {
-    const user = await User.findOne({ _id: userID });
+    const user = await User.findOne({ _id: ObjectId(userID) });
 
     if (!user) {
       return res.status(400).json({
@@ -361,24 +361,24 @@ router.delete('/delete', auth, async (req, res) => {
       });
     }
 
-    let sentMessages = await user.messages.sent;
-    let receivedMessages = await user.messages.received;
+    let outMail = await user.mail.sent;
+    let inMail = await user.mail.received;
 
-    // console.log('sentMesssages', sentMessages);
-    // console.log('receivedMEssages', receivedMessages);
+    // console.log('sentMesssages', sentMail);
+    // console.log('receivedMEssages', receivedMail);
 
     toBeDeleted.forEach((message) => {
-      receivedMessages.forEach((receivedMessage, index) => {
+      inMail.forEach((receivedMessage, index) => {
         if (receivedMessage._id.toString() === message._id) {
-          receivedMessages.splice(index, 1);
+          inMail.splice(index, 1);
         }
       });
     });
 
     toBeDeleted.forEach((message) => {
-      sentMessages.forEach((sentMessage, index) => {
+      outMail.forEach((sentMessage, index) => {
         if (sentMessage._id.toString() === message._id) {
-          sentMessages.splice(index, 1);
+          outMail.splice(index, 1);
         }
       });
     });
@@ -387,16 +387,16 @@ router.delete('/delete', auth, async (req, res) => {
       { _id: userID },
       {
         $set: {
-          'messages.received': receivedMessages,
-          'messages.sent': sentMessages
+          'mail.received': inMail,
+          'mail.sent': outMail
         }
       },
       { new: true }
     );
 
     const messages = [];
-    messages.push(...updatedMessages.messages.received);
-    messages.push(...updatedMessages.messages.sent);
+    messages.push(...updatedMessages.mail.received);
+    messages.push(...updatedMessages.mail.sent);
 
     filteredMessages = messages.filter((message) => {
       return message.isTrash;
@@ -418,10 +418,10 @@ router.patch('/read', auth, async (req, res) => {
 
   try {
     const updatedUser = await User.updateOne(
-      { _id: ObjectId(userID), 'messages.received._id': ObjectId(messageID) },
+      { _id: ObjectId(userID), 'mail.received._id': ObjectId(messageID) },
       {
         $set: {
-          'messages.received.$.isRead': isReadStatus
+          'mail.received.$.isRead': isReadStatus
         }
       },
       { upsert: true }
@@ -450,11 +450,11 @@ router.patch('/trash', auth, async (req, res) => {
       updatedUser = await User.updateOne(
         {
           _id: ObjectId(userID),
-          'messages.received._id': ObjectId(messageID)
+          'mail.received._id': ObjectId(messageID)
         },
         {
           $set: {
-            'messages.received.$.isTrash': isTrashStatus
+            'mail.received.$.isTrash': isTrashStatus
           }
         },
         { upsert: true }
@@ -465,11 +465,11 @@ router.patch('/trash', auth, async (req, res) => {
       updatedUser = await User.updateOne(
         {
           _id: ObjectId(userID),
-          'messages.sent._id': ObjectId(messageID)
+          'mail.sent._id': ObjectId(messageID)
         },
         {
           $set: {
-            'messages.sent.$.isTrash': isTrashStatus
+            'mail.sent.$.isTrash': isTrashStatus
           }
         },
         { upsert: true }
