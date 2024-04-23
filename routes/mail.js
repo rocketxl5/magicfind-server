@@ -220,7 +220,7 @@ router.get('/sent/:userID', auth, async (req, res) => {
 });
 
 // Get unread messages
-router.get('/unread/:userID', async (req, res) => {
+router.get('/unread/:userID', auth, async (req, res) => {
   const { userID } = req.params;
   console.log('in unread')
   try {
@@ -241,8 +241,8 @@ router.get('/unread/:userID', async (req, res) => {
     const sortedMail = filteredMail.sort((a, b) => {
       return b.date - a.date;
     });
-
-    res.status(200).json({ data: sortedMail });
+    console.log(sortedMail)
+    res.status(200).json(sortedMail);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
