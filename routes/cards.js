@@ -203,7 +203,7 @@ router.get('/catalog/:cardName', async (req, res) => {
   try {
     const results = await Card.find(
       {
-        name: cardName,
+        _card_name: cardName,
         _published: { $ne: [] }
       },
       {
@@ -220,6 +220,7 @@ router.get('/catalog/:cardName', async (req, res) => {
         set_uri: 1,
         type_line: 1,
         _published: 1,
+        _card_name: 1,
         _uuid: 1
       });
 
@@ -237,7 +238,7 @@ router.get('/catalog/:cardName', async (req, res) => {
       })
     });
 
-    console.log(publishedCards)
+    console.log(publishedCards.length)
 
     res.status(200).json({
       cards: publishedCards,
@@ -260,7 +261,7 @@ router.get('/catalog/:cardName/:userID', async (req, res) => {
   try {
     const results = await Card.find(
       {
-        name: cardName,
+        _card_name: cardName,
         _published: { $ne: [] }
       },
       {
@@ -278,6 +279,7 @@ router.get('/catalog/:cardName/:userID', async (req, res) => {
         set_uri: 1,
         type_line: 1,
         _published: 1,
+        _card_name: 1,
         _uuid: 1
       });
 
@@ -440,6 +442,8 @@ router.post(
       throw new Error(error)
     }
 
+    console.log(newCard)
+
 
     try {
       const user = await User.findOne({ _id: ObjectId(userID) });
@@ -535,7 +539,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
       {
         $set: {
           // 'cards.$.publishedID': publishedID,
-          // 'cards.$._card_name': cardName,
+          'cards.$.cardName': cardName,
           'cards.$._price': price,
           'cards.$._quantity': quantity,
           'cards.$._condition': condition,

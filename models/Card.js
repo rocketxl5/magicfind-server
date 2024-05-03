@@ -1,9 +1,4 @@
 const mongoose = require('mongoose');
-const crypto = require('crypto');
-
-const validator = (name) => {
-  return name.replace(/[^\w\+]+/g, ' ');
-}
 
 const cardSchema = new mongoose.Schema({
   artist: {
@@ -168,7 +163,9 @@ const cardSchema = new mongoose.Schema({
   },
   _card_name: {
     type: String,
-    validate: [validator, this.name]
+    default: function () {
+      return this.name.replace(/[^\w\+]+/g, '-').toLowerCase();
+    } 
   },
   _owners: {
     type: Array,
