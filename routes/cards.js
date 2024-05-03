@@ -11,6 +11,7 @@ const crypto = require('crypto');
 const { handleFiles } = require('../helpers/handleFiles');
 const skryfall = require('../data/ALCHEMY');
 const features = require('../data/FEATURES');
+const { CLIENT_RENEG_LIMIT } = require('tls');
 
 // Get feature cards image urls
 router.get('/feature', async(req, res) => {
@@ -198,7 +199,7 @@ router.get('/catalog/:cardName', async (req, res) => {
   const { cardName, userID } = req.params;
   const page = req.query.page || 0;
   const cardsPerPage = 10;
-
+  console.log(cardName)
   try {
     const results = await Card.find(
       {
@@ -236,6 +237,8 @@ router.get('/catalog/:cardName', async (req, res) => {
       })
     });
 
+    console.log(publishedCards)
+
     res.status(200).json({
       cards: publishedCards,
       cardName: cardName
@@ -252,7 +255,8 @@ router.get('/catalog/:cardName/:userID', async (req, res) => {
   const { cardName, userID } = req.params;
   const page = req.query.page || 0;
   const cardsPerPage = 10;
-
+  // Regex to remove any special characters and successive withspaces with a single white space
+  console.log(cardName.replace(/[^\w\+]+/g, ' '))
   try {
     const results = await Card.find(
       {
@@ -392,7 +396,7 @@ router.post(
   async (req, res) => {
     const { userID, cardID } = req.params;
     const selectedCard = req.body;
-    console.log(selectedCard)
+    // console.log(selectedCard)
 
     const message = {
       server: {
@@ -496,7 +500,7 @@ router.post(
         () => console.log(`${newCard.name} successfully added to store`)
       );
 
-      res.status(200).json({ isCardAdded: true });
+      res.status(200).json({ card: newCard, isCardAdded: true });
       } catch (error) {
       throw new Error(error)
     }
@@ -531,7 +535,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
       {
         $set: {
           // 'cards.$.publishedID': publishedID,
-          'cards.$.cardName': cardName,
+          // 'cards.$._card_name': cardName,
           'cards.$._price': price,
           'cards.$._quantity': quantity,
           'cards.$._condition': condition,

@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 const crypto = require('crypto');
 
+const validator = (name) => {
+  return name.replace(/[^\w\+]+/g, ' ');
+}
+
 const cardSchema = new mongoose.Schema({
   artist: {
     type: String,
@@ -161,6 +165,10 @@ const cardSchema = new mongoose.Schema({
   type_line: {
     type: String,
     default: ''
+  },
+  _card_name: {
+    type: String,
+    validate: [validator, this.name]
   },
   _owners: {
     type: Array,
