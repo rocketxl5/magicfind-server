@@ -386,7 +386,7 @@ router.get('/collection/:userID', auth, async (req, res) => {
     // }
     
     // Returns card collection and cardNames
-    res.status(200).json({ cards: cards, cardNames: cardNames, search: 'collection' });
+    res.status(200).json({ cards: cards, query: 'All Cards', search: 'collection' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
