@@ -316,11 +316,11 @@ router.get('/catalog/:cardName/:userID', async (req, res) => {
 // ///////////////////////////////////
 // Search Collection by Card Name ////
 // ///////////////////////////////////
-router.get('/collection/:userID/:cardName', auth, async (req, res) => {
+router.get('/collection/:userID/:queryString', auth, async (req, res) => {
 
-  const { userID, cardName } = req.params;
+  const { userID, queryString } = req.params;
 
-  if (!cardName) {
+  if (!queryString) {
     return res.status(400).json({ msg: 'Field is empty' });
   }
 
@@ -331,18 +331,25 @@ router.get('/collection/:userID/:cardName', auth, async (req, res) => {
       return res.status(400).send('User does not exist');
     }
 
-    // Search for a card with cardName
-    // const found = user.cards.find(card => card._card_name === cardName);
-    const cards = user.cards.filter((card) => {
-      return card._card_name === cardName;
-    });
+    let cards;
+    let query;
 
-    if (!cards) {
-      return res.status(400).json({ message: `No result for ${cardName}`, cardName: cardName })
+    if (queryString === 'all-cards') {
+      cards = user.cards
+      query = 'All Cards'
+    }
+    else {
+      cards = user.cards.filter((card) => {
+        return card._card_name === queryString;
+      });
+      query = cards[0].name;
     }
 
+    if (!cards) {
+      return res.status(400).json({ message: `No result for ${queryString}`, cardName: queryString })
+    }
 
-    res.status(200).json({ cards, query: cards[0].name, search: 'collection' });
+    res.status(200).json({ cards, query, search: 'collection' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -352,7 +359,7 @@ router.get('/collection/:userID/:cardName', auth, async (req, res) => {
 // Get Collection by User ID /////////
 // ///////////////////////////////////
 router.get('/collection/:userID', auth, async (req, res) => {
-  const { userID } = req.params;
+  const { userID, query } = req.params;
 
   try {
     const user = await User.findOne({ _id: ObjectId(userID) });
@@ -365,28 +372,15 @@ router.get('/collection/:userID', auth, async (req, res) => {
     //   return res.status(400).json({ message: message.noCards });
     // }
 
+
     const cardNames = cards.map(card => {
       return card.name;
     }).filter((name, index, array) => {
       return array.indexOf(name) === index;
     })
-
-
-    // // If query is for card names
-    // if (query === 'cardnames') {
-    //   // Remove card names duplicates
-    //   results = cards.map(card => {
-    //     return card.name
-    //   }).filter((name, index, array) => {
-    //     return array.indexOf(name) === index;
-    //   })
-    // }
-    // else if (query === 'cards') {
-    //   results = cards
-    // }
     
     // Returns card collection and cardNames
-    res.status(200).json({ cards: cards, query: 'All Cards', search: 'collection' });
+    res.status(200).json({ cards: cards, cardNames: cardNames, search: 'collection' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
