@@ -106,6 +106,7 @@ router.get('/cardnames', async (req, res) => {
           .filter(obj => { return obj.name.includes('//') })
           .map(obj => { return { name: obj.name.split('//').map(el => el.trim()), index: obj.index } })
           .filter(obj => { return obj.name[0].includes(obj.name[1]) });
+        // console.log(result)
         return await result;
       } catch (error) {
         throw new Error(error.message);
@@ -197,9 +198,10 @@ router.get('/catalog', async (req, res) => {
 // Get catalog cards by card name
 router.get('/catalog/:cardName', async (req, res) => {
   const { cardName, userID } = req.params;
-  const page = req.query.page || 0;
-  const cardsPerPage = 10;
+  // const page = req.query.page || 0;
+  // const cardsPerPage = 10;
   console.log(cardName)
+  // const card_name = cardName.replace(/[^\w\+]+/g, '-').toLowerCase();
   try {
     const results = await Card.find(
       {
@@ -237,12 +239,11 @@ router.get('/catalog/:cardName', async (req, res) => {
         publishedCards.push(Object.assign(rest, data));
       })
     });
-
-    console.log(publishedCards.length)
-
+    console.log(publishedCards[0].name)
     res.status(200).json({
       cards: publishedCards,
-      cardName: cardName
+      query: publishedCards[0].name,
+      search: 'catalog'
     })
   } catch (error) {
     return res.status(400).json({ message: error.message })
@@ -254,10 +255,12 @@ router.get('/catalog/:cardName', async (req, res) => {
 // /////////////////
 router.get('/catalog/:cardName/:userID', async (req, res) => {
   const { cardName, userID } = req.params;
-  const page = req.query.page || 0;
-  const cardsPerPage = 10;
+  // const page = req.query.page || 0;
+  // const cardsPerPage = 10;
   // Regex to remove any special characters and successive withspaces with a single white space
-  console.log(cardName.replace(/[^\w\+]+/g, ' '))
+  const card_name = cardName.replace(/[^\w\+]+/g, '-').toLowerCase();
+  console.log(cardName)
+  console.log(card_name)
   try {
     const results = await Card.find(
       {
@@ -301,7 +304,8 @@ router.get('/catalog/:cardName/:userID', async (req, res) => {
 
     res.status(200).json({
       cards: publishedCards,
-      cardName: cardName
+      query: publishedCards[0].name,
+      search: 'catalog'
     })
   } catch (error) {
     return res.status(400).json({ message: error.message })
@@ -316,7 +320,7 @@ router.get('/collection/:userID/:cardName', auth, async (req, res) => {
 
   const { userID, cardName } = req.params;
 
-  if (cardName === '') {
+  if (!cardName) {
     return res.status(400).json({ msg: 'Field is empty' });
   }
 
@@ -328,17 +332,17 @@ router.get('/collection/:userID/:cardName', auth, async (req, res) => {
     }
 
     // Search for a card with cardName
-    const found = user.cards.find(card => card.name === cardName);
+    // const found = user.cards.find(card => card._card_name === cardName);
+    const cards = user.cards.filter((card) => {
+      return card._card_name === cardName;
+    });
 
-    if (!found) {
+    if (!cards) {
       return res.status(400).json({ message: `No result for ${cardName}`, cardName: cardName })
     }
 
-    const cards = user.cards.filter((card) => {
-      return card.name.toLowerCase() === cardName.toLowerCase();
-    });
 
-    res.status(200).json({ cards, cardName });
+    res.status(200).json({ cards, query: cards[0].name, search: 'collection' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -348,7 +352,7 @@ router.get('/collection/:userID/:cardName', auth, async (req, res) => {
 // Get Collection by User ID /////////
 // ///////////////////////////////////
 router.get('/collection/:userID', auth, async (req, res) => {
-  const { userID, query } = req.params;
+  const { userID } = req.params;
 
   try {
     const user = await User.findOne({ _id: ObjectId(userID) });
@@ -382,7 +386,7 @@ router.get('/collection/:userID', auth, async (req, res) => {
     // }
     
     // Returns card collection and cardNames
-    res.status(200).json({ cards: cards, cardNames: cardNames });
+    res.status(200).json({ cards: cards, cardNames: cardNames, search: 'collection' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -419,8 +423,18 @@ router.post(
       }
     }
 
-    let newCard
+    if (selectedCard.name.includes('//')) {
+      const sides = selectedCard.name.split('//').map(side => {
+        return side.trim()
+      })
+      console.log(sides)
+      console.log(sides[0] === sides[1])
+      if (sides[0] === sides[1]) {
+        selectedCard.name = sides[0];
+      }
+    }
 
+    let newCard
     // Check if card already exists in card catalog
     try {
 
@@ -442,7 +456,7 @@ router.post(
       throw new Error(error)
     }
 
-    console.log(newCard)
+    // console.log(newCard)
 
 
     try {
@@ -529,7 +543,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
   } = await req.body;
 
   const { cardID, userID } = req.params;
-  console.log(publishedID)
+
   try {
     const updatedUser = await User.updateOne(
       {
@@ -574,10 +588,8 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
           '_published.publishedID': publishedID
         })
 
-        console.log(doc)
         // If it does not exist
         if (!doc) {
-          console.log('does not exist')
           // Create document
           const publishCard = await Card.updateOne(
           {
