@@ -200,7 +200,7 @@ router.get('/catalog/:cardName', async (req, res) => {
   const { cardName, userID } = req.params;
   // const page = req.query.page || 0;
   // const cardsPerPage = 10;
-  console.log(cardName)
+
   // const card_name = cardName.replace(/[^\w\+]+/g, '-').toLowerCase();
   try {
     const results = await Card.find(
@@ -259,8 +259,8 @@ router.get('/catalog/:cardName/:userID', async (req, res) => {
   // const cardsPerPage = 10;
   // Regex to remove any special characters and successive withspaces with a single white space
   const card_name = cardName.replace(/[^\w\+]+/g, '-').toLowerCase();
-  console.log(cardName)
-  console.log(card_name)
+  // console.log(cardName)
+  // console.log(card_name)
   try {
     const results = await Card.find(
       {
@@ -321,7 +321,8 @@ router.get('/collection/:userID/:queryString', auth, async (req, res) => {
   const { userID, queryString } = req.params;
 
   if (!queryString) {
-    return res.status(400).json({ msg: 'Field is empty' });
+    console.log('no querystring')
+    return res.status(400).json({ message: 'Field is empty' });
   }
 
   try {
@@ -360,7 +361,7 @@ router.get('/collection/:userID/:queryString', auth, async (req, res) => {
 // ///////////////////////////////////
 router.get('/collection/:userID', auth, async (req, res) => {
   const { userID, query } = req.params;
-
+  // console.log(req.headers.query)
   try {
     const user = await User.findOne({ _id: ObjectId(userID) });
     if (!user) {
@@ -368,19 +369,22 @@ router.get('/collection/:userID', auth, async (req, res) => {
     }
 
     const cards = user.cards; 
-    // if (cards.length === 0) {
-    //   return res.status(400).json({ message: message.noCards });
-    // }
 
+    if (req.headers.query === 'Collection Cards') {
+      res.status(200).json({ cards: cards, query: req.headers.query });
+    }
 
-    const cardNames = cards.map(card => {
-      return card.name;
-    }).filter((name, index, array) => {
-      return array.indexOf(name) === index;
-    })
-    
-    // Returns card collection and cardNames
-    res.status(200).json({ cards: cards, cardNames: cardNames, search: 'collection' });
+    if (req.headers.query === 'ids') {
+      const collection =
+        new Map([["ids", cards.map(card => card.id)], ['names', cards.map(card => {
+          return card.name;
+        }).filter((name, index, array) => {
+          return array.indexOf(name) === index;
+        })]])
+      // Response with card ids and card names
+      res.status(200).json({ card: { ids: collection.get('ids'), names: collection.get('names') } });
+    }
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -421,8 +425,7 @@ router.post(
       const sides = selectedCard.name.split('//').map(side => {
         return side.trim()
       })
-      console.log(sides)
-      console.log(sides[0] === sides[1])
+
       if (sides[0] === sides[1]) {
         selectedCard.name = sides[0];
       }
