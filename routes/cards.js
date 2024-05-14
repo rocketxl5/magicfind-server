@@ -258,7 +258,7 @@ router.get('/catalog/:cardName/:userID', async (req, res) => {
   // const page = req.query.page || 0;
   // const cardsPerPage = 10;
   // Regex to remove any special characters and successive withspaces with a single white space
-  const card_name = cardName.replace(/[^\w\+]+/g, '-').toLowerCase();
+  // const card_name = cardName.replace(/[^\w\+]+/g, '-').toLowerCase();
   // console.log(cardName)
   // console.log(card_name)
   try {
@@ -320,11 +320,6 @@ router.get('/collection/:userID/:queryString', auth, async (req, res) => {
 
   const { userID, queryString } = req.params;
 
-  if (!queryString) {
-    console.log('no querystring')
-    return res.status(400).json({ message: 'Field is empty' });
-  }
-
   try {
     let user = await User.findOne({ _id: ObjectId(userID) });
 
@@ -335,16 +330,18 @@ router.get('/collection/:userID/:queryString', auth, async (req, res) => {
     let cards;
     let query;
 
-    if (queryString === 'all-cards') {
-      cards = user.cards
-      query = 'All Cards'
+    if (queryString === 'all') {
+      cards = user.cards;
+      query = 'Card Collection';
     }
     else {
+
       cards = user.cards.filter((card) => {
         return card._card_name === queryString;
       });
       query = cards[0].name;
     }
+
 
     if (!cards) {
       return res.status(400).json({ message: `No result for ${queryString}`, cardName: queryString })
@@ -360,7 +357,7 @@ router.get('/collection/:userID/:queryString', auth, async (req, res) => {
 // Get Collection by User ID /////////
 // ///////////////////////////////////
 router.get('/collection/:userID', auth, async (req, res) => {
-  const { userID, query } = req.params;
+  const { userID } = req.params;
   // console.log(req.headers.query)
   try {
     const user = await User.findOne({ _id: ObjectId(userID) });
@@ -370,8 +367,8 @@ router.get('/collection/:userID', auth, async (req, res) => {
 
     const cards = user.cards; 
 
-    if (req.headers.query === 'Collection Cards') {
-      res.status(200).json({ cards: cards, query: req.headers.query });
+    if (req.headers.query === 'cards') {
+      res.status(200).json({ cards: cards, query: 'Collection Cards' });
     }
 
     if (req.headers.query === 'ids') {
