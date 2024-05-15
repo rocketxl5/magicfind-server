@@ -9,9 +9,8 @@ const User = require('../models/User');
 const ObjectId = require('mongodb').ObjectId;
 const crypto = require('crypto');
 const { handleFiles } = require('../helpers/handleFiles');
-const skryfall = require('../data/ALCHEMY');
+const scryfall = require('../data/ALCHEMY');
 const features = require('../data/FEATURES');
-const { CLIENT_RENEG_LIMIT } = require('tls');
 
 // Get feature cards image urls
 router.get('/feature', async(req, res) => {
@@ -51,12 +50,12 @@ router.get('/feature', async(req, res) => {
 })
 
 
-// Get all english card names from Skryfall API
+// Get all english card names from scryfall API
 router.get('/cardnames', async (req, res) => {
 
   let alchemy_cardnames = []
   try {
-    const urls = skryfall.alchemy_sets.map(set => {
+    const urls = scryfall.alchemy_sets.map(set => {
       return `https://api.scryfall.com/cards/search?include_extras=true&include_variations=true&order=set&q=e%3${set}&unique=prints`
     })
 
@@ -130,7 +129,7 @@ router.get('/cardnames', async (req, res) => {
   }
 })
 
-// Get Skryfall API card title from data/cardnames.json
+// Get scryfall API card title from data/cardnames.json
 router.get('/mtg-cardnames', async (req, res) => {
   try {
     const result = fs.readFileSync('./data/cardnames.json', { encoding: 'utf8' });
@@ -240,11 +239,7 @@ router.get('/catalog/:cardName', async (req, res) => {
       })
     });
     console.log(publishedCards[0].name)
-    res.status(200).json({
-      cards: publishedCards,
-      query: publishedCards[0].name,
-      search: 'catalog'
-    })
+    res.status(200).json(publishedCards)
   } catch (error) {
     return res.status(400).json({ message: error.message })
   }
@@ -302,11 +297,7 @@ router.get('/catalog/:cardName/:userID', async (req, res) => {
       })
     });
 
-    res.status(200).json({
-      cards: publishedCards,
-      query: publishedCards[0].name,
-      search: 'catalog'
-    })
+    res.status(200).json(publishedCards)
   } catch (error) {
     return res.status(400).json({ message: error.message })
   }
@@ -328,18 +319,14 @@ router.get('/collection/:userID/:queryString', auth, async (req, res) => {
     }
 
     let cards;
-    let query;
 
     if (queryString === 'all') {
       cards = user.cards;
-      query = 'Card Collection';
     }
     else {
-
       cards = user.cards.filter((card) => {
         return card._card_name === queryString;
       });
-      query = cards[0].name;
     }
 
 
@@ -347,7 +334,7 @@ router.get('/collection/:userID/:queryString', auth, async (req, res) => {
       return res.status(400).json({ message: `No result for ${queryString}`, cardName: queryString })
     }
 
-    res.status(200).json({ cards, query, search: 'collection' });
+    res.status(200).json(cards);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
