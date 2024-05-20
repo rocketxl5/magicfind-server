@@ -1,3 +1,4 @@
+const { ObjectId } = require('mongodb');
 const mongoose = require('mongoose');
 
 const cardSchema = new mongoose.Schema({
@@ -7,10 +8,6 @@ const cardSchema = new mongoose.Schema({
   },
   artist_ids: {
     type: Array
-  },
-  booster: {
-    type: Boolean,
-    default: false
   },
   border_color: {
     type: String,
@@ -40,9 +37,6 @@ const cardSchema = new mongoose.Schema({
     type: Array,
     default: []
   },
-  flavor_text: {
-    type: String
-  },
   foil: {
     type: Boolean
   },
@@ -50,18 +44,9 @@ const cardSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  full_art: {
-    type: Boolean
-  },
-  highres_image: {
-    type: Boolean
-  },
   id: {
     type: String,
-    required: true
-  },
-  illustration_id: {
-    type: String
+    default: ''
   },
   image_uris: {
     type: Object,
@@ -74,9 +59,6 @@ const cardSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  layout: {
-    type: String
-  },
   legalities: {
     type: Object,
     default: {}
@@ -88,9 +70,6 @@ const cardSchema = new mongoose.Schema({
   name: {
     type: String,
     default: ''
-  },
-  nonfoil: {
-    type: Boolean
   },
   oracle_id: {
     type: String
@@ -113,13 +92,6 @@ const cardSchema = new mongoose.Schema({
   prints_search_uri: {
     type: String
   },
-  promo: {
-    type: Boolean,
-    default: false
-  },
-  purchase_uris: {
-    type: Object
-  },
   rarity: {
     type: String,
     default: ''
@@ -131,9 +103,6 @@ const cardSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  reprint: {
-    type: Boolean
-  },
   set: {
     type: String
   },
@@ -144,16 +113,6 @@ const cardSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  set_search_uri: {
-    type: String
-  },
-  set_uri: {
-    type: String
-  },
-  set_type: {
-    type: String,
-    default: ''
-  },
   toughness: {
     type: String
   },
@@ -161,7 +120,13 @@ const cardSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  _card_name: {
+  card_id: {
+    type: String,
+    default: function () {
+      return ObjectId(this._id).toString()
+    }
+  },
+  card_name: {
     type: String,
     default: function () {
       return this.name.replace(/[^\w\+]+/g, '-').toLowerCase();
@@ -175,10 +140,6 @@ const cardSchema = new mongoose.Schema({
     type: Array,
     default: []
   },
-  _views: {
-    type: Number,
-    default: 0
-  }
 });
 
 

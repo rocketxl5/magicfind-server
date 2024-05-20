@@ -3,7 +3,8 @@ const router = express.Router()
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const User = require('../models/User')
-const { body, validationResult } = require('express-validator');
+const ObjectId = require('mongodb').ObjectId
+
 
 ////////////////////////////
 // Get Users ///////////////
@@ -59,7 +60,8 @@ router.post('/login', async (req, res) => {
 
         const payload = {
             user: {
-                id: user.id,
+                // Convert moongoose object id to string
+                id: ObjectId(user._id).toString(),
                 name: user.name,
                 email: user.email,
                 avatar: user.avatar,

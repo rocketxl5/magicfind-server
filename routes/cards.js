@@ -204,7 +204,7 @@ router.get('/catalog/:cardName', async (req, res) => {
   try {
     const results = await Card.find(
       {
-        _card_name: cardName,
+        _name: cardName,
         _published: { $ne: [] }
       },
       {
@@ -221,8 +221,7 @@ router.get('/catalog/:cardName', async (req, res) => {
         set_uri: 1,
         type_line: 1,
         _published: 1,
-        _card_name: 1,
-        _uuid: 1
+        _name: 1,
       });
 
     if (!results.length) {
@@ -238,7 +237,6 @@ router.get('/catalog/:cardName', async (req, res) => {
         publishedCards.push(Object.assign(rest, data));
       })
     });
-    console.log(publishedCards[0].name)
     res.status(200).json(publishedCards)
   } catch (error) {
     return res.status(400).json({ message: error.message })
@@ -259,7 +257,7 @@ router.get('/catalog/:cardName/:userID', async (req, res) => {
   try {
     const results = await Card.find(
       {
-        _card_name: cardName,
+        _name: cardName,
         _published: { $ne: [] }
       },
       {
@@ -277,8 +275,7 @@ router.get('/catalog/:cardName/:userID', async (req, res) => {
         set_uri: 1,
         type_line: 1,
         _published: 1,
-        _card_name: 1,
-        _uuid: 1
+        _name: 1
       });
 
     if (!results.length) {
@@ -325,7 +322,7 @@ router.get('/collection/:userID/:queryString', auth, async (req, res) => {
     }
     else {
       cards = user.cards.filter((card) => {
-        return card._card_name === queryString;
+        return card.card_name === queryString;
       });
     }
 
@@ -382,6 +379,7 @@ router.post(
   '/add/:userID/:cardID',
   auth,
   async (req, res) => {
+    // cardID === scryfall card id => xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     const { userID, cardID } = req.params;
     const selectedCard = req.body;
     // console.log(selectedCard)
@@ -405,54 +403,59 @@ router.post(
       }
     }
 
-    if (selectedCard.name.includes('//')) {
-      const sides = selectedCard.name.split('//').map(side => {
-        return side.trim()
-      })
-
-      if (sides[0] === sides[1]) {
-        selectedCard.name = sides[0];
-      }
-    }
-
+    // *** Add card to cards collection in db ***
     let newCard
     // Check if card already exists in card catalog
+    // Searching for instance with same scryfall card id as incoming request id
     try {
-
       newCard = await Card.findOne({ id: cardID });
-      // If not, add card card catalog
+      // If not found
       if (!newCard) {
+        if (selectedCard.name.includes('//')) {
+          const sides = selectedCard.name.split('//').map(side => {
+            return side.trim()
+          })
 
+          // Assign only one of the value to card.name if equal
+          if (sides[0] === sides[1]) {
+            selectedCard.name = sides[0];
+          }
+        }
+        // Create a moogoose object with card object in request body
         newCard = new Card(selectedCard);
 
-        if (!newCard) {
+
+        if (newCard) {
+          // remove _views field from card object
+          // const { _views, ...rest } = newCard.toObject();
+          // Save card object to db
+          console.log(newCard)
+          await newCard.save();
+        } else {
           return res
             .status(400)
             .json({ message: message.server });
-        } else {
-          await newCard.save();
         }
       }
     } catch (error) {
       throw new Error(error)
     }
 
-    // console.log(newCard)
 
-
+    // *** Check if card already exist in user collection ***
     try {
+      // Get user object with userID 
       const user = await User.findOne({ _id: ObjectId(userID) });
 
       if (!user) {
         return res.status(400).json(message.notFound);
       }
 
-      // Validation function
       // Check if card already exist in user collection
       const isFound = async (user, cardID) => {
         try {
           const cards = user.cards;
-          // Look if card already exists in user's cards
+          // Retun result
           return await cards.find(card => {
             return card.id === cardID
           });
@@ -462,7 +465,7 @@ router.post(
         }
       }
 
-      // If card already exists, skip and return
+      // If card already exist, skip and return
       if (await isFound(user, cardID)) {
         return res.status(400).json(message.cardExist);
       }
@@ -471,6 +474,7 @@ router.post(
       throw new Error(error)
     }
 
+    // ***
     try {
       // Add user id to card specifications array property
       Card.updateOne(
@@ -485,8 +489,27 @@ router.post(
         () => console.log(`${userID} successfully added to owners`))
 
       // Convert mongoose object to js object
-      // Remove owners & published properties
-      const { _owners, _published, ...rest } = newCard.toObject();
+      const {
+        _owners,
+        _published,
+        artist_ids,
+        booster,
+        border_color,
+        edhrec_rank,
+        flavor_text,
+        frame,
+        full_art,
+        highres_image,
+        illustration_id,
+        layout,
+        nonfoil,
+        oracle_id,
+        prints_search_uri,
+        promo,
+        related_uris,
+        reprint,
+        ...rest
+      } = newCard.toObject();
 
       // Add modified card object to user cards property array
       User.updateOne(
@@ -695,9 +718,7 @@ router.delete('/delete', auth, async (req, res) => {
       return res.status(400).json({ message: 'Could not retrieve user data', isDeleted: false });
     }
 
-    res.status(200).json({
-      cards: user.cards
-    });
+    res.status(200).json(user.cards);
   } catch (error) {
     res.status(500).json(error.message);
   }

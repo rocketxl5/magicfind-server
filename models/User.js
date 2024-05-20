@@ -27,6 +27,21 @@ const userSchema = new mongoose.Schema({
         type: Array,
         default: []
     },
+    // Card collection
+    decks: {
+        type: Array,
+        default: [
+            {
+                name: '',
+                format: '',
+                cards: []
+            }
+        ]
+    },
+    store: {
+        type: Array,
+        default: []
+    },
     mail: {
         type: Object,
         default: {
