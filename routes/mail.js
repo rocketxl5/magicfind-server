@@ -146,7 +146,7 @@ router.get('/:userID', auth, async (req, res) => {
   const { userID } = req.params;
 
   try {
-    let user = await User.findOne({ _id: ObjectId(userID) });
+    let user = await User.findOne({ id: userID });
 
     if (!user) {
       return res.status(400).json({

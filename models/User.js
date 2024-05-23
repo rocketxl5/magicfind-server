@@ -1,6 +1,13 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const { ObjectId } = require('mongodb');
 
 const userSchema = new mongoose.Schema({
+    // id: {
+    //     type: String,
+    //     default: () => {
+    //         return ObjectId(this._id).toString()
+    //     }
+    // },
     name: {
         type: String,
         trim: true,
@@ -23,22 +30,16 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    // Card collection
     cards: {
         type: Array,
         default: []
     },
-    // Card collection
-    decks: {
-        type: Array,
-        default: [
-            {
-                name: '',
-                format: '',
-                cards: []
-            }
-        ]
-    },
     store: {
+        type: Array,
+        default: []
+    },
+    decks: {
         type: Array,
         default: []
     },

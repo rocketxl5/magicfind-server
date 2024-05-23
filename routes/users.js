@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const bcrypt = require('bcrypt')
+const auth = require('../middleware/authorization')
 const jwt = require('jsonwebtoken')
 const User = require('../models/User')
 const ObjectId = require('mongodb').ObjectId
@@ -61,7 +62,7 @@ router.post('/login', async (req, res) => {
         const payload = {
             user: {
                 // Convert moongoose object id to string
-                id: ObjectId(user._id).toString(),
+                id: user.id,
                 name: user.name,
                 email: user.email,
                 avatar: user.avatar,
@@ -163,21 +164,142 @@ router.post('/signup', async (req, res) => {
     }
 });
 
+/////////////////////////////////
+// User Collection //////////////
+/////////////////////////////////
+router.get('/collection/:userId', auth, async (req, res) => {
+    const { userId } = req.params;
+    console.log(userId)
+    try {
+        const user = await User.findOne({ _id: ObjectId(userId) });
+        // console.log(user)
+        if (!user) {
+            return res.status(400).json({ message: 'User not found' });
+        }
+
+        const cards = new Map([
+            ["ids", user.cards.map(card => card.id)],
+            ['names', user.cards.map(card => {
+                return card.name;
+            })
+                .filter((name, index, array) => {
+                    return array.indexOf(name) === index;
+                })]
+        ]);
+
+        // Response with card ids and card names
+        res.status(200).json({ card: { ids: cards.get('ids'), names: cards.get('names') } });
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+
+router.get('/collection/:userId/:query', auth, async (req, res) => {
+    const { userId, query } = req.params;
+    console.log(userId)
+    console.log(query)
+    try {
+        const user = await User.findOne({ id: ObjectId(userId) });
+        // console.log(user)
+        if (!user) {
+            return res.status(400).json({ message: 'User not found' });
+        }
+
+        // If query is for cards
+        if (query === 'all') {
+            // Return user card collection
+            res.status(200).json(user.cards);
+        }
+        else {
+            const cards = user.cards.filter((card) => {
+                return card.card_name === query;
+            });
+            res.status(200).json(cards);
+        }
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.post('/:userId/add/card', auth, async (req, res) => {
+    const { userId } = req.params;
+    // console.log(req.body)
+    // console.log(userId)
+    const newCard = req.body
+    if (!newCard) {
+        throw new Error({ message: 'Missing card data for api/users/collection/:userId/add/product' })
+    }
+
+    try {
+        // const filter = { _id: ObjectId(userId) };
+        // const update = { $push: { cards: req.body } };
+        const updated = User.updateOne(
+            { id: userId },
+            {
+                $push: {
+                    cards: newCard
+                }
+            },
+            {
+                returnDocument: true
+            },
+            () => console.log(`${newCard.name} was successfully added to collection`)
+        );
+        if (updated) {
+            res.status(200).json({ isSet: true, origin: 'users' })
+        }
+        else {
+            throw new Error({ message: 'Could not update user collection' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+})
+
 ////////////////////////////
 // User Store //////////////
 ////////////////////////////
-router.get('/store/:userID', async (req, res) => {
-    const { userID } = req.params;
+router.get('/store/:userId', auth, async (req, res) => {
+    const { userId } = req.params;
+
     try {
-        const user = await User.findOne({ _id: userID })
+        const user = await User.findOne({ id: userId })
 
         if (user) {
-            const publishedCards = user.cards.filter(card => card._is_published)
+            const publishedCards = user.cards.filter(card => card.isPublished)
             res.status(200).json(publishedCards)
         }
     } catch (error) {
         throw new Error(error)
     }
 });
+
+router.post('/store/:userId', auth, async (req, res) => {
+    const { userId } = req.params;
+    // console.log(userId)
+    const data = req.body;
+    // console.log(data)
+
+    // const user = await User.findOne({ id: userId });
+
+    // if (user) {
+    const updated = User.updateOne(
+        { id: userId },
+        {
+            $push: {
+                store: data
+            }
+        },
+        () => console.log(`${newCard.name} successfully added to store`)
+    );
+    // }
+    if (updated) {
+        console.log(updated)
+        // res.status(200).json(updated)
+    }
+})
 
 module.exports = router;

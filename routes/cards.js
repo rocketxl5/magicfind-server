@@ -169,404 +169,407 @@ router.get('/feature/:query/:iteration', async (req, res) => {
   }
 })
 
-// Get catalog published card names 
-router.get('/catalog', async (req, res) => {
+// // Get catalog published card names
+// router.get('/catalog', async (req, res) => {
 
-  try {
-    const publishedCards = await Card.find(
-      { _published: { $ne: [] } }
-    )
-    // const data = await fsPromises.readFile('./data/cardcatalog.json', { encoding: 'utf8' });
+//   try {
+//     const catalogCards = await Card.find(
+//       { catalog: { $ne: [] } }
+//     )
+//     // const data = await fsPromises.readFile('./data/cardcatalog.json', { encoding: 'utf8' });
 
-    results = publishedCards.map(card => {
-      return card.name
-    }).filter((name, index, array) => {
-      return array.indexOf(name) === index;
-    });
+//     results = catalogCards.map(card => {
+//       return card.name
+//     }).filter((name, index, array) => {
+//       return array.indexOf(name) === index;
+//     });
 
-    res.status(200).json(results);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+//     res.status(200).json(results);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
 
 // /////////////////
 // Search Catalog //
 // /////////////////
 
 // Get catalog cards by card name
-router.get('/catalog/:cardName', async (req, res) => {
-  const { cardName, userID } = req.params;
-  // const page = req.query.page || 0;
-  // const cardsPerPage = 10;
+// router.get('/catalog/:cardName', async (req, res) => {
+//   const { cardName, userId } = req.params;
+//   // const page = req.query.page || 0;
+//   // const cardsPerPage = 10;
 
-  // const card_name = cardName.replace(/[^\w\+]+/g, '-').toLowerCase();
-  try {
-    const results = await Card.find(
-      {
-        _name: cardName,
-        _published: { $ne: [] }
-      },
-      {
-        card_faces: 1,
-        finishes: 1,
-        image_uris: 1,
-        layout: 1,
-        name: 1,
-        oversized: 1,
-        oracle_text: 1,
-        released_at: 1,
-        set: 1,
-        set_name: 1,
-        set_uri: 1,
-        type_line: 1,
-        _published: 1,
-        _name: 1,
-      });
+//   // const card_name = cardName.replace(/[^\w\+]+/g, '-').toLowerCase();
+//   try {
+//     const results = await Card.find(
+//       {
+//         card_name: cardName,
+//         catalog: { $ne: [] }
+//       },
+//       {
+//         card_faces: 1,
+//         finishes: 1,
+//         image_uris: 1,
+//         layout: 1,
+//         name: 1,
+//         oversized: 1,
+//         oracle_text: 1,
+//         released_at: 1,
+//         set: 1,
+//         set_name: 1,
+//         set_uri: 1,
+//         type_line: 1,
+//         isPublished: 1,
+//         card_name: 1,
+//       });
 
-    if (!results.length) {
-      return res.status(400).json({ message: `No result for ${cardName}`, cardName: cardName })
-    }
+//     if (!results.length) {
+//       return res.status(400).json({ message: `No result for ${cardName}`, cardName: cardName })
+//     }
 
-    const cards = JSON.parse(JSON.stringify(results));
-    const publishedCards = [];
+//     const cards = JSON.parse(JSON.stringify(results));
+//     const publishedCards = [];
 
-    cards.forEach((card) => {
-      card._published.forEach((data) => {
-        const { _published, ...rest } = card;
-        publishedCards.push(Object.assign(rest, data));
-      })
-    });
-    res.status(200).json(publishedCards)
-  } catch (error) {
-    return res.status(400).json({ message: error.message })
-  }
-});
+//     cards.forEach((card) => {
+//       card.catalog.forEach((instance) => {
+//         const { catalog, ...rest } = card;
+//         publishedCards.push(Object.assign(rest, instance));
+//       })
+//     });
+//     res.status(200).json(publishedCards)
+//   } catch (error) {
+//     res.status(400).json({ message: error.message })
+//   }
+// });
 
 // /////////////////
 // Search Catalog //
 // /////////////////
-router.get('/catalog/:cardName/:userID', async (req, res) => {
-  const { cardName, userID } = req.params;
-  // const page = req.query.page || 0;
-  // const cardsPerPage = 10;
-  // Regex to remove any special characters and successive withspaces with a single white space
-  // const card_name = cardName.replace(/[^\w\+]+/g, '-').toLowerCase();
-  // console.log(cardName)
-  // console.log(card_name)
-  try {
-    const results = await Card.find(
-      {
-        _name: cardName,
-        _published: { $ne: [] }
-      },
-      {
-        card_faces: 1,
-        card_faces: 1,
-        finishes: 1,
-        image_uris: 1,
-        layout: 1,
-        name: 1,
-        oversized: 1,
-        oracle_text: 1,
-        released_at: 1,
-        set: 1,
-        set_name: 1,
-        set_uri: 1,
-        type_line: 1,
-        _published: 1,
-        _name: 1
-      });
+// router.get('/catalog/:cardName/:userId', async (req, res) => {
+//   const { cardName, userId } = req.params;
+//   // const page = req.query.page || 0;
+//   // const cardsPerPage = 10;
+//   // Regex to remove any special characters and successive withspaces with a single white space
+//   // const card_name = cardName.replace(/[^\w\+]+/g, '-').toLowerCase();
+//   // console.log(cardName)
+//   // console.log(card_name)
+//   try {
+//     const results = await Card.find(
+//       {
+//         card_name: cardName,
+//         catalog: { $ne: [] }
+//       },
+//       {
+//         card_faces: 1,
+//         card_faces: 1,
+//         finishes: 1,
+//         image_uris: 1,
+//         layout: 1,
+//         name: 1,
+//         oversized: 1,
+//         oracle_text: 1,
+//         released_at: 1,
+//         set: 1,
+//         set_name: 1,
+//         set_uri: 1,
+//         type_line: 1,
+//         isPublished: 1,
+//         card_name: 1
+//       });
 
-    if (!results.length) {
-      return res.status(400).json({ message: `No result for ${cardName}`, cardName: cardName })
-    }
+//     if (!results.length) {
+//       return res.status(400).json({ message: `No result for card found` })
+//     }
 
-    const cards = JSON.parse(JSON.stringify(results));
-    const filterCards = cards.filter((card) => !card._published.includes(userID))
+//     const cards = JSON.parse(JSON.stringify(results));
+//     const filterCards = cards.filter((card) => !card.catalog.includes(userId))
 
-    const publishedCards = [];
+//     const publishedCards = [];
 
-    filterCards.forEach((card) => {
-      card._published.forEach((data) => {
-        const { _published, ...rest } = card;
-        publishedCards.push(Object.assign(rest, data));
-      })
-    });
+//     filterCards.forEach((card) => {
+//       card.catalog.forEach((instance) => {
+//         const { catalog, ...rest } = card;
+//         publishedCards.push(Object.assign(rest, instance));
+//       })
+//     });
 
-    res.status(200).json(publishedCards)
-  } catch (error) {
-    return res.status(400).json({ message: error.message })
-  }
-});
+//     res.status(200).json(publishedCards)
+//   } catch (error) {
+//     return res.status(400).json({ message: error.message })
+//   }
+// });
 
 
 // ///////////////////////////////////
 // Search Collection by Card Name ////
 // ///////////////////////////////////
-router.get('/collection/:userID/:queryString', auth, async (req, res) => {
+// router.get('/collection/:userId/:queryString', auth, async (req, res) => {
 
-  const { userID, queryString } = req.params;
+//   const { userId, queryString } = req.params;
 
-  try {
-    let user = await User.findOne({ _id: ObjectId(userID) });
+//   try {
+//     let user = await User.findOne({ id: userId });
 
-    if (!user) {
-      return res.status(400).send('User does not exist');
-    }
+//     if (!user) {
+//       return res.status(400).send('User does not exist');
+//     }
 
-    let cards;
+//     let cards;
 
-    if (queryString === 'all') {
-      cards = user.cards;
-    }
-    else {
-      cards = user.cards.filter((card) => {
-        return card.card_name === queryString;
-      });
-    }
+//     if (queryString === 'all') {
+//       cards = user.cards;
+//     }
+//     else {
+//       cards = user.cards.filter((card) => {
+//         return card.card_name === queryString;
+//       });
+//     }
 
 
-    if (!cards) {
-      return res.status(400).json({ message: `No result for ${queryString}`, cardName: queryString })
-    }
+//     if (!cards) {
+//       return res.status(400).json({ message: `No result for ${queryString}`, cardName: queryString })
+//     }
 
-    res.status(200).json(cards);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+//     res.status(200).json(cards);
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// });
 
 // ///////////////////////////////////
 // Get Collection by User ID /////////
 // ///////////////////////////////////
-router.get('/collection/:userID', auth, async (req, res) => {
-  const { userID } = req.params;
-  // console.log(req.headers.query)
-  try {
-    const user = await User.findOne({ _id: ObjectId(userID) });
-    if (!user) {
-      return res.status(400).json({ message: 'User not found' });
-    }
+// router.get('/collection/:userId', auth, async (req, res) => {
+//   const { userId } = req.params;
+//   // console.log(req.headers.query)
+//   try {
+//     const user = await User.findOne({ id: userId });
+//     if (!user) {
+//       return res.status(400).json({ message: 'User not found' });
+//     }
 
-    const cards = user.cards; 
+//     const cards = user.cards;
 
-    if (req.headers.query === 'cards') {
-      res.status(200).json({ cards: cards, query: 'Collection Cards' });
-    }
+//     if (req.headers.query === 'cards') {
+//       res.status(200).json({ cards: cards, query: 'Collection Cards' });
+//     }
 
-    if (req.headers.query === 'ids') {
-      const collection =
-        new Map([["ids", cards.map(card => card.id)], ['names', cards.map(card => {
-          return card.name;
-        }).filter((name, index, array) => {
-          return array.indexOf(name) === index;
-        })]])
-      // Response with card ids and card names
-      res.status(200).json({ card: { ids: collection.get('ids'), names: collection.get('names') } });
-    }
+//     if (req.headers.query === 'card_ids') {
+//       const collection =
+//         new Map([["card_ids", cards.map(card => card.id)], ['names', cards.map(card => {
+//           return card.name;
+//         }).filter((name, index, array) => {
+//           return array.indexOf(name) === index;
+//         })]])
+//       // Response with card ids and card names
+//       res.status(200).json({ card: { ids: collection.get('card_ids'), names: collection.get('names') } });
+//     }
 
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
 
 // //////////////////////////////
 // Add Card To User Collection //
 // Add User To Card Owners //////
 // //////////////////////////////
-router.post(
-  '/add/:userID/:cardID',
-  auth,
-  async (req, res) => {
-    // cardID === scryfall card id => xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-    const { userID, cardID } = req.params;
-    const selectedCard = req.body;
-    // console.log(selectedCard)
+router.post('/add/product', auth, async (req, res) => {
 
-    const message = {
-      server: {
-        title: 'server',
-        body: 'Card could Not Be Added'
-      },
-      notFound: {
-        title: 'not_found',
-        body: 'No User Found'
-      },
-      cardExist: {
-        title: 'card_exist',
-        body: 'Card Already In Collection'
-      },
-      cardAdded: {
-        title: 'card_added',
-        body: 'Card Successfuly Added'
-      }
-    }
-
-    // *** Add card to cards collection in db ***
-    let newCard
-    // Check if card already exists in card catalog
-    // Searching for instance with same scryfall card id as incoming request id
-    try {
-      newCard = await Card.findOne({ id: cardID });
-      // If not found
-      if (!newCard) {
-        if (selectedCard.name.includes('//')) {
-          const sides = selectedCard.name.split('//').map(side => {
-            return side.trim()
-          })
-
-          // Assign only one of the value to card.name if equal
-          if (sides[0] === sides[1]) {
-            selectedCard.name = sides[0];
-          }
-        }
-        // Create a moogoose object with card object in request body
-        newCard = new Card(selectedCard);
-
-
-        if (newCard) {
-          // remove _views field from card object
-          // const { _views, ...rest } = newCard.toObject();
-          // Save card object to db
-          console.log(newCard)
-          await newCard.save();
-        } else {
-          return res
-            .status(400)
-            .json({ message: message.server });
-        }
-      }
-    } catch (error) {
-      throw new Error(error)
-    }
-
-
-    // *** Check if card already exist in user collection ***
-    try {
-      // Get user object with userID 
-      const user = await User.findOne({ _id: ObjectId(userID) });
-
-      if (!user) {
-        return res.status(400).json(message.notFound);
-      }
-
-      // Check if card already exist in user collection
-      const isFound = async (user, cardID) => {
-        try {
-          const cards = user.cards;
-          // Retun result
-          return await cards.find(card => {
-            return card.id === cardID
-          });
-
-        } catch (error) {
-          throw new Error(error)
-        }
-      }
-
-      // If card already exist, skip and return
-      if (await isFound(user, cardID)) {
-        return res.status(400).json(message.cardExist);
-      }
-
-    } catch (error) {
-      throw new Error(error)
-    }
-
-    // ***
-    try {
-      // Add user id to card specifications array property
-      Card.updateOne(
-        {
-          _id: ObjectId(newCard._id)
-        },
-        {
-          $push: {
-            _owners: { userID: userID }
-          }
-        },
-        () => console.log(`${userID} successfully added to owners`))
-
-      // Convert mongoose object to js object
-      const {
-        _owners,
-        _published,
-        artist_ids,
-        booster,
-        border_color,
-        edhrec_rank,
-        flavor_text,
-        frame,
-        full_art,
-        highres_image,
-        illustration_id,
-        layout,
-        nonfoil,
-        oracle_id,
-        prints_search_uri,
-        promo,
-        related_uris,
-        reprint,
-        ...rest
-      } = newCard.toObject();
-
-      // Add modified card object to user cards property array
-      User.updateOne(
-        { _id: ObjectId(userID) },
-        {
-          $push: {
-            cards: { ...rest }
-          }
-        },
-        () => console.log(`${newCard.name} successfully added to store`)
-      );
-
-      res.status(200).json({ card: newCard, isCardAdded: true });
-      } catch (error) {
-      throw new Error(error)
-    }
+  if (!req.body) {
+    throw new Error({ message: 'Missing product data for api/cards/inventory/add/product' })
   }
-);
+  try {
+    const product = new Card(req.body);
+    const success = await product.save();
+
+    if (success) {
+      res.status(200).json({ product: product, isSet: true, origin: 'cards' })
+    }
+    else {
+      throw new Error({ message: 'Product could not be saved to inventory @ api/cards/inventory/add/product' })
+    }
+  } catch (error) {
+    res.status(500).json(error.message);
+  }
+
+});
+// router.post(
+//   '/add/:userId/:cardID',
+//   auth,
+//   async (req, res) => {
+//     // cardID === scryfall card id => xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+//     const { userId, cardID } = req.params;
+//     const selectedCard = req.body;
+//     // console.log(selectedCard)
+
+//     const message = {
+//       server: {
+//         title: 'server',
+//         body: 'Card could Not Be Added'
+//       },
+//       notFound: {
+//         title: 'not_found',
+//         body: 'No User Found'
+//       },
+//       cardExist: {
+//         title: 'card_exist',
+//         body: 'Card Already In Collection'
+//       },
+//       cardAdded: {
+//         title: 'card_added',
+//         body: 'Card Successfuly Added'
+//       }
+//     }
+
+//     // *** Add card to cards collection in db ***
+//     let newCard
+//     // Check if card already exists in card catalog
+//     // Searching for instance with same scryfall card id as incoming request id
+//     try {
+//       newCard = await Card.findOne({ id: cardID });
+//       // If not found
+//       if (!newCard) {
+//         // if (selectedCard.name.includes('//')) {
+//         //   const sides = selectedCard.name.split('//').map(side => {
+//         //     return side.trim()
+//         //   })
+
+//         //   // Assign only one of the value to card.name if equal
+//         //   if (sides[0] === sides[1]) {
+//         //     selectedCard.name = sides[0];
+//         //   }
+//         // }
+//         // Create a moogoose object with card object in request body
+//         newCard = new Card(selectedCard);
+
+
+//         if (newCard) {
+//           // remove _views field from card object
+//           // const { _views, ...rest } = newCard.toObject();
+//           // Save card object to db
+//           // console.log(newCard)
+//           await newCard.save();
+//         } else {
+//           return res
+//             .status(400)
+//             .json({ message: message.server });
+//         }
+//       }
+//     } catch (error) {
+//       throw new Error(error)
+//     }
+
+
+//     // *** Check if card already exist in user.cards ***
+//     try {
+//       // Get user object with userId
+//       const user = await User.findOne({ id: userId });
+//       console.log(user)
+//       if (!user) {
+//         return res.status(400).json(message.notFound);
+//       }
+
+//       // Check if card already exist in user.cards
+//       const isFound = async (user, cardID) => {
+//         try {
+//           const collection = user.cards;
+//           // Retun result
+//           return await collection.find(card => {
+//             return card.id === cardID
+//           });
+
+//         } catch (error) {
+//           throw new Error(error)
+//         }
+//       }
+
+//       // If card already exist, skip and return
+//       if (await isFound(user, cardID)) {
+//         return res.status(400).json(message.cardExist);
+//       }
+
+//     } catch (error) {
+//       throw new Error(error)
+//     }
+
+//     // ***
+//     try {
+//       // Add user id to card specifications array property
+//       Card.updateOne(
+//         {
+//           _id: ObjectId(newCard._id)
+//         },
+//         {
+//           $push: {
+//             owners: { id: userId }
+//           }
+//         },
+//         () => console.log(`${userId} successfully added to owners`))
+
+//       // Convert mongoose object to js object
+//       const {
+//         owners,
+//         catalog,
+//         ...rest
+//       } = newCard.toObject();
+
+//       // Add modified card object to user.cards property array
+//       User.updateOne(
+//         { id: userId },
+//         {
+//           $push: {
+//             cards: { ...rest }
+//           }
+//         },
+//         () => console.log(`${newCard.name} successfully added to store`)
+//       );
+
+//       res.status(200).json({ card: newCard, isCardAdded: true });
+//       } catch (error) {
+//       throw new Error(error)
+//     }
+//   }
+// );
 
 // /////////////////////////////
 // Edit Card [Edit, Update]  ///
 // /////////////////////////////
-router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
+router.patch('/edit/:cardID/:userId', auth, async (req, res) => {
   const {
-    cardName,
+    name,
     price,
     quantity,
     condition,
     language,
     comment,
-    banner,
-    published,
-    datePublished,
-    publishedID
+    isPublished,
+    created,
+    updated,
+    catalogId,
   } = await req.body;
 
-  const { cardID, userID } = req.params;
+  const { cardID, userId } = req.params;
 
   try {
     const updatedUser = await User.updateOne(
       {
-        _id: ObjectId(userID),
+        _id: ObjectId(userId),
         'cards._id': ObjectId(cardID)
       },
       {
         $set: {
-          // 'cards.$.publishedID': publishedID,
-          'cards.$.cardName': cardName,
-          'cards.$._price': price,
-          'cards.$._quantity': quantity,
-          'cards.$._condition': condition,
-          'cards.$._language': language,
-          'cards.$._comment': comment,
-          'cards.$._is_banner': banner,
-          'cards.$._is_published': published,
-          'cards.$._published_id': publishedID,
-          'cards.$._date_published': datePublished
+          'cards.$.name': name,
+          'cards.$.price': price,
+          'cards.$.quantity': quantity,
+          'cards.$.condition': condition,
+          'cards.$.language': language,
+          'cards.$.comment': comment,
+          'cards.$.isPublished': isPublished,
+          'cards.$.catalogId': catalogId,
+          'cards.$.created': created,
+          'cards.$.updated': updated
         }
       }
     ); 
@@ -575,47 +578,50 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
       return res.status(400).json({ message: 'Could not update selected card', collection: 'user' });
     }
 
-    const user = await User.findOne({ _id: ObjectId(userID) });
+    const user = await User.findOne({ id: userId });
 
     if (!user) {
       return res.status(400).json({ message: 'Could not retrieve user data' });
     }
 
-    const { name, email, country, avatar, rating } = user;
+    const { userName, email, country, avatar, rating } = user;
 
     // If update is published
-    if (published) {
+    if (isPublished) {
       try {
         // Search for existing document.
         const doc = await Card.findOne({
           _id: ObjectId(cardID),
-          '_published.publishedID': publishedID
+          'catalog.catalogId': catalogId
         })
 
         // If it does not exist
         if (!doc) {
           // Create document
-          const publishCard = await Card.updateOne(
+          const catalogCard = await Card.updateOne(
           {
             _id: ObjectId(cardID)
           },
           {
             $push: {
-              _published: {
+              catalog: {
                 seller: {
-                  userID,
-                  userName: name,
+                  id,
+                  userName,
                   avatar,
                   rating,
                   email,
                   country,
                 },
+                name,
+                catalogId,
                 price,
                 quantity,
                 language,
                 condition,
                 comment,
-                publishedID
+                updated,
+                isPublished
               }
             }
           })
@@ -625,20 +631,22 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
           await Card.updateOne(
             {
               _id: ObjectId(cardID),
-              '_published.publishedID': publishedID
+              'catalog.catalodId': catalogId
             },
             {
               $set: {
-                '_published.$.userName': name,
-                '_published.$.userEmail': email,
-                '_published.$.avatar': avatar,
-                '_published.$.rating': rating,
-                '_published.$.userCountry': country,
-                '_published.$.price': price,
-                '_published.$.quantity': quantity,
-                '_published.$.condition': condition,
-                '_published.$.language': language,
-                '_published.$.comment': comment,
+                'catalog.$.userName': name,
+                'catalog.$.userEmail': email,
+                'catalog.$.avatar': avatar,
+                'catalog.$.rating': rating,
+                'catalog.$.userCountry': country,
+                'catalog.$.price': price,
+                'catalog.$.quantity': quantity,
+                'catalog.$.condition': condition,
+                'catalog.$.language': language,
+                'catalog.$.comment': comment,
+                'catalog.$.isPublished': isPublished,
+                'catalog.$.updated': updated,
               }
             }
           )
@@ -656,7 +664,7 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
           },
           {
             $pull: {
-              _published: { publishedID: publishedID }
+              catalog: { catalogId: catalogId }
             }
           })
       } catch (error) {
@@ -675,14 +683,14 @@ router.patch('/edit/:cardID/:userID', auth, async (req, res) => {
 });
 
 // //////////////////////////////////////////////
-// Delete Card [User.cards, Card._published]  ///
+// Delete Card [User.cards, Card.catalog]  ///
 // //////////////////////////////////////////////
 router.delete('/delete', auth, async (req, res) => {
-  const { itemID, productID, userID } = await req.body;
+  const { catalogId, productID, userId } = await req.body;
 
   try {
     let user = await User.findOneAndUpdate(
-      { _id: ObjectId(userID) },
+      { id: userId },
       {
         // Remove card from user profile cards object
         $pull: {
@@ -695,15 +703,15 @@ router.delete('/delete', auth, async (req, res) => {
       return res.status(400).json({ message: 'Card could not be deleted from users collection', isDeleted: false });
     }
 
-    // deleteFromFile(fs, './data', 'cardcatalog.json', { cardID, userID }, 'utf8');
+    // deleteFromFile(fs, './data', 'cardcatalog.json', { cardID, userId }, 'utf8');
 
     const card = await Card.findOneAndUpdate(
       { _id: ObjectId(productID) },
       {
-        // Remove user from card _owners & card _published
+        // Remove user from card owners & card catalog
         $pull: {
-          _owners: { userID: userID },
-          _published: { itemID: itemID }
+          owners: { id: userId },
+          catalog: { catalogId: catalogId }
         }
       }
     );
@@ -712,7 +720,7 @@ router.delete('/delete', auth, async (req, res) => {
       return res.status(400).json({ message: 'Card could not be deleted from cards', isDeleted: false });
     }
 
-    user = await User.findOne({ _id: ObjectId(userID) });
+    user = await User.findOne({ id: userId });
 
     if (!user) {
       return res.status(400).json({ message: 'Could not retrieve user data', isDeleted: false });

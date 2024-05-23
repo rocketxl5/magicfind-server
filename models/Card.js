@@ -1,5 +1,5 @@
-const { ObjectId } = require('mongodb');
 const mongoose = require('mongoose');
+const { ObjectId } = require('mongodb');
 
 const cardSchema = new mongoose.Schema({
   artist: {
@@ -120,23 +120,23 @@ const cardSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  card_id: {
-    type: String,
-    default: function () {
-      return ObjectId(this._id).toString()
-    }
-  },
+  // card_id: {
+  //   type: String,
+  //   default: function () {
+  //     return ObjectId(this._id).toString()
+  //   }
+  // },
   card_name: {
     type: String,
     default: function () {
       return this.name.replace(/[^\w\+]+/g, '-').toLowerCase();
     } 
   },
-  _owners: {
+  owners: {
     type: Array,
     default: []
   },
-  _published: {
+  catalog: {
     type: Array,
     default: []
   },
