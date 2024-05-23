@@ -371,14 +371,11 @@ router.get('/feature/:query/:iteration', async (req, res) => {
 //   }
 // });
 
-// //////////////////////////////
-// Add Card To User Collection //
-// Add User To Card Owners //////
-// //////////////////////////////
+
 router.post('/add/product', auth, async (req, res) => {
 
   if (!req.body) {
-    throw new Error({ message: 'Missing product data for api/cards/inventory/add/product' })
+    throw new Error({ message: 'Missing product data for api/cards/add/product' })
   }
   try {
     const product = new Card(req.body);
@@ -393,7 +390,38 @@ router.post('/add/product', auth, async (req, res) => {
   } catch (error) {
     res.status(500).json(error.message);
   }
+});
 
+router.patch('/modify/$cardId', auth, async (req, res) => {
+  if (!req.body) {
+    throw new Error({ message: 'Missing product data for api/cards/modify/cardId' })
+  }
+
+  const { id } = req.params;
+  const user = req.body;
+
+  try {
+    const updated = Card.updateOne(
+      { id: id },
+      {
+        $push: {
+          owners: user
+        }
+      },
+      {
+        returnDocument: true
+      },
+      () => console.log(`${newCard.name} was successfully added to collection`)
+    );
+    if (updated) {
+      res.status(200).json({ isSet: true, origin: 'users' })
+    }
+    else {
+      throw new Error({ message: 'Could not update user collection' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 // router.post(
 //   '/add/:userId/:cardID',

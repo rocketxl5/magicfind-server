@@ -224,14 +224,13 @@ router.get('/collection/:userId/:query', auth, async (req, res) => {
     }
 });
 
-router.post('/:userId/add/card', auth, async (req, res) => {
-    const { userId } = req.params;
-    // console.log(req.body)
-    // console.log(userId)
-    const newCard = req.body
+router.patch('/:userId/add/card', auth, async (req, res) => {
     if (!newCard) {
         throw new Error({ message: 'Missing card data for api/users/collection/:userId/add/product' })
     }
+
+    const { userId } = req.params;
+    const card = req.body;    
 
     try {
         // const filter = { _id: ObjectId(userId) };
@@ -240,7 +239,7 @@ router.post('/:userId/add/card', auth, async (req, res) => {
             { id: userId },
             {
                 $push: {
-                    cards: newCard
+                    cards: card
                 }
             },
             {
