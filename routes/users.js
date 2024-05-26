@@ -169,10 +169,10 @@ router.post('/signup', async (req, res) => {
 /////////////////////////////////
 router.get('/collection/:userId', auth, async (req, res) => {
     const { userId } = req.params;
-    console.log(userId)
+
     try {
         const user = await User.findOne({ _id: ObjectId(userId) });
-        // console.log(user)
+
         if (!user) {
             return res.status(400).json({ message: 'User not found' });
         }
@@ -198,11 +198,10 @@ router.get('/collection/:userId', auth, async (req, res) => {
 
 router.get('/collection/:userId/:query', auth, async (req, res) => {
     const { userId, query } = req.params;
-    console.log(userId)
-    console.log(query)
+
     try {
         const user = await User.findOne({ id: ObjectId(userId) });
-        // console.log(user)
+
         if (!user) {
             return res.status(400).json({ message: 'User not found' });
         }
@@ -225,30 +224,27 @@ router.get('/collection/:userId/:query', auth, async (req, res) => {
 });
 
 router.patch('/:userId/add/card', auth, async (req, res) => {
-    if (!newCard) {
+    if (!req.body) {
         throw new Error({ message: 'Missing card data for api/users/collection/:userId/add/product' })
     }
-
     const { userId } = req.params;
     const card = req.body;    
 
     try {
         // const filter = { _id: ObjectId(userId) };
         // const update = { $push: { cards: req.body } };
-        const updated = User.updateOne(
-            { id: userId },
+        const doc = await User.findOneAndUpdate(
+            { _id: ObjectId(userId) },
             {
                 $push: {
                     cards: card
                 }
             },
-            {
-                returnDocument: true
-            },
-            () => console.log(`${newCard.name} was successfully added to collection`)
+            // () => console.log(`${card.name} was successfully added to collection`)
         );
-        if (updated) {
-            res.status(200).json({ isSet: true, origin: 'users' })
+
+        if (doc) {
+            res.status(200).json({ isSet: true, product: card, method: 'patch' })
         }
         else {
             throw new Error({ message: 'Could not update user collection' });

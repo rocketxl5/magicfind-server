@@ -370,7 +370,23 @@ router.get('/feature/:query/:iteration', async (req, res) => {
 //     res.status(500).json({ message: error.message });
 //   }
 // });
-
+router.get('/product/:oracleId', async (req, res) => {
+  const { oracleId } = req.params;
+  try {
+    const product = await Card.findOne({ oracle_id: oracleId });
+    // if card does not exist
+    if (!product) {
+      //   // trim card object
+      res.status(200).json({ isSet: false, method: 'get' })
+    }
+    else {
+      res.status(200).json({ isSet: true, product: product, method: 'get' })
+    }
+  }
+  catch (error) {
+    res.status(400).json({ message: error.message })
+  }
+})
 
 router.post('/add/product', auth, async (req, res) => {
 
@@ -378,188 +394,51 @@ router.post('/add/product', auth, async (req, res) => {
     throw new Error({ message: 'Missing product data for api/cards/add/product' })
   }
   try {
-    const product = new Card(req.body);
+    const product = await new Card(req.body);
     const success = await product.save();
 
     if (success) {
-      res.status(200).json({ product: product, isSet: true, origin: 'cards' })
+      res.status(200).json({ isSet: true, product: product, method: 'post' })
     }
     else {
       throw new Error({ message: 'Product could not be saved to inventory @ api/cards/inventory/add/product' })
     }
   } catch (error) {
-    res.status(500).json(error.message);
+    res.status(500).json({ message: error.message });
   }
 });
 
-router.patch('/modify/$cardId', auth, async (req, res) => {
+router.patch('/modify/:cardId', auth, async (req, res) => {
   if (!req.body) {
     throw new Error({ message: 'Missing product data for api/cards/modify/cardId' })
   }
 
-  const { id } = req.params;
+  const { cardId } = req.params;
   const user = req.body;
 
   try {
-    const updated = Card.updateOne(
-      { id: id },
+    const doc = await Card.findOneAndUpdate(
+      { _id: ObjectId(cardId) },
       {
         $push: {
           owners: user
-        }
+        },
       },
       {
-        returnDocument: true
-      },
-      () => console.log(`${newCard.name} was successfully added to collection`)
+        new: true
+      }
     );
-    if (updated) {
-      res.status(200).json({ isSet: true, origin: 'users' })
+
+    if (doc) {
+      res.status(200).json({ isSet: true, product: doc, method: null })
     }
     else {
-      throw new Error({ message: 'Could not update user collection' });
+      throw new Error({ message: 'Could not update user owners' });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json(error);
   }
 });
-// router.post(
-//   '/add/:userId/:cardID',
-//   auth,
-//   async (req, res) => {
-//     // cardID === scryfall card id => xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-//     const { userId, cardID } = req.params;
-//     const selectedCard = req.body;
-//     // console.log(selectedCard)
-
-//     const message = {
-//       server: {
-//         title: 'server',
-//         body: 'Card could Not Be Added'
-//       },
-//       notFound: {
-//         title: 'not_found',
-//         body: 'No User Found'
-//       },
-//       cardExist: {
-//         title: 'card_exist',
-//         body: 'Card Already In Collection'
-//       },
-//       cardAdded: {
-//         title: 'card_added',
-//         body: 'Card Successfuly Added'
-//       }
-//     }
-
-//     // *** Add card to cards collection in db ***
-//     let newCard
-//     // Check if card already exists in card catalog
-//     // Searching for instance with same scryfall card id as incoming request id
-//     try {
-//       newCard = await Card.findOne({ id: cardID });
-//       // If not found
-//       if (!newCard) {
-//         // if (selectedCard.name.includes('//')) {
-//         //   const sides = selectedCard.name.split('//').map(side => {
-//         //     return side.trim()
-//         //   })
-
-//         //   // Assign only one of the value to card.name if equal
-//         //   if (sides[0] === sides[1]) {
-//         //     selectedCard.name = sides[0];
-//         //   }
-//         // }
-//         // Create a moogoose object with card object in request body
-//         newCard = new Card(selectedCard);
-
-
-//         if (newCard) {
-//           // remove _views field from card object
-//           // const { _views, ...rest } = newCard.toObject();
-//           // Save card object to db
-//           // console.log(newCard)
-//           await newCard.save();
-//         } else {
-//           return res
-//             .status(400)
-//             .json({ message: message.server });
-//         }
-//       }
-//     } catch (error) {
-//       throw new Error(error)
-//     }
-
-
-//     // *** Check if card already exist in user.cards ***
-//     try {
-//       // Get user object with userId
-//       const user = await User.findOne({ id: userId });
-//       console.log(user)
-//       if (!user) {
-//         return res.status(400).json(message.notFound);
-//       }
-
-//       // Check if card already exist in user.cards
-//       const isFound = async (user, cardID) => {
-//         try {
-//           const collection = user.cards;
-//           // Retun result
-//           return await collection.find(card => {
-//             return card.id === cardID
-//           });
-
-//         } catch (error) {
-//           throw new Error(error)
-//         }
-//       }
-
-//       // If card already exist, skip and return
-//       if (await isFound(user, cardID)) {
-//         return res.status(400).json(message.cardExist);
-//       }
-
-//     } catch (error) {
-//       throw new Error(error)
-//     }
-
-//     // ***
-//     try {
-//       // Add user id to card specifications array property
-//       Card.updateOne(
-//         {
-//           _id: ObjectId(newCard._id)
-//         },
-//         {
-//           $push: {
-//             owners: { id: userId }
-//           }
-//         },
-//         () => console.log(`${userId} successfully added to owners`))
-
-//       // Convert mongoose object to js object
-//       const {
-//         owners,
-//         catalog,
-//         ...rest
-//       } = newCard.toObject();
-
-//       // Add modified card object to user.cards property array
-//       User.updateOne(
-//         { id: userId },
-//         {
-//           $push: {
-//             cards: { ...rest }
-//           }
-//         },
-//         () => console.log(`${newCard.name} successfully added to store`)
-//       );
-
-//       res.status(200).json({ card: newCard, isCardAdded: true });
-//       } catch (error) {
-//       throw new Error(error)
-//     }
-//   }
-// );
 
 // /////////////////////////////
 // Edit Card [Edit, Update]  ///
