@@ -178,7 +178,7 @@ router.get('/collection/:userId', auth, async (req, res) => {
         }
 
         const cards = new Map([
-            ["ids", user.cards.map(card => card.id)],
+            ["ids", user.cards.map(card => card.card_id)],
             ['names', user.cards.map(card => {
                 return card.name;
             })

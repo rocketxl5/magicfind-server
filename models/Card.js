@@ -55,6 +55,9 @@ const cardSchema = new mongoose.Schema({
   keywords: {
     type: Array
   },
+  layout: {
+    type: String,
+  },
   lang: {
     type: String,
     default: ''
@@ -120,17 +123,17 @@ const cardSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  // card_id: {
-  //   type: String,
-  //   default: function () {
-  //     return ObjectId(this._id).toString()
-  //   }
-  // },
+  card_id: {
+    type: String,
+  },
   card_name: {
     type: String,
     default: function () {
       return this.name.replace(/[^\w\+]+/g, '-').toLowerCase();
     } 
+  },
+  finish: {
+    type: String,
   },
   owners: {
     type: Array,

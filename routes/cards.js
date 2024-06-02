@@ -370,10 +370,10 @@ router.get('/feature/:query/:iteration', async (req, res) => {
 //     res.status(500).json({ message: error.message });
 //   }
 // });
-router.get('/product/:oracleId', async (req, res) => {
-  const { oracleId } = req.params;
+router.get('/product/:id', async (req, res) => {
+  const { id } = req.params;
   try {
-    const product = await Card.findOne({ oracle_id: oracleId });
+    const product = await Card.findOne({ id: id });
     // if card does not exist
     if (!product) {
       //   // trim card object
@@ -394,11 +394,11 @@ router.post('/add/product', auth, async (req, res) => {
     throw new Error({ message: 'Missing product data for api/cards/add/product' })
   }
   try {
-    const product = await new Card(req.body);
-    const success = await product.save();
+    const card = await new Card(req.body);
+    const success = await card.save();
 
     if (success) {
-      res.status(200).json({ isSet: true, product: product, method: 'post' })
+      res.status(200).json({ isSet: true, product: card, method: 'post' })
     }
     else {
       throw new Error({ message: 'Product could not be saved to inventory @ api/cards/inventory/add/product' })
@@ -408,17 +408,17 @@ router.post('/add/product', auth, async (req, res) => {
   }
 });
 
-router.patch('/modify/:cardId', auth, async (req, res) => {
+router.patch('/update/owners/:id', auth, async (req, res) => {
   if (!req.body) {
     throw new Error({ message: 'Missing product data for api/cards/modify/cardId' })
   }
 
-  const { cardId } = req.params;
+  const { id } = req.params;
   const user = req.body;
 
   try {
     const doc = await Card.findOneAndUpdate(
-      { _id: ObjectId(cardId) },
+      { _id: ObjectId(id) },
       {
         $push: {
           owners: user
