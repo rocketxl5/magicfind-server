@@ -18,7 +18,7 @@ const fetchData = async (url, isFetch, results) => {
 }
 
 const jobs = [
-    // Method updating card names file every 24hrs at midnight
+    // Fetch and filters MTG card sets
     async () => {
         try {
             // Returns array of cardnames excluding cards begining with A- (Arena cards)
@@ -45,6 +45,7 @@ const jobs = [
         }
 
     },
+    // Fetch and sanitize MTG card names for Archive autocomplete
     async () => {
         let alchemy_cardnames = []
         try {

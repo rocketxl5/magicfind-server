@@ -19,16 +19,17 @@ const SELF_URL = 'https://magicfind-server.onrender.com/';
 
 const dynoWaker = wokeDyno(SELF_URL);
 
-// Update card names and sets everyday @ midnight
-new CronJob('0 0 * * *', () => {
+// Update card names and card sets everyday @ midnight
+new CronJob('00 00 00 * * *', () => {
     try {
         const promises = jobs.map(async job => {
             return await job();
         })
-        const resolved = Promise.all(promises);
 
-        resolved.then(res => {
-            const message = `${moment.tz(new Date(), 'America/Toronto').format()} : Card list was successfuly updated\n`;
+        Promise.all(promises)
+            .then(res => {
+                const date = moment.tz(new Date(), 'America/Toronto').format();
+                const message = `Card list was successfuly updated: ${date}\n`;
             // Update log file data
             fs.appendFile('logs.txt', message, (error) => {
                 if (error) throw error

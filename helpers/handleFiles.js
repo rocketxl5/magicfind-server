@@ -10,7 +10,6 @@ const handleFiles = (fs, directory, filename, data, async = false) => {
     }
 }
 
-
 const writeToFile = (fs, directory, filename, data) => {
     fs.writeFileSync(`${directory}/${filename}`, data, (error) => {
         if (error) throw Error
