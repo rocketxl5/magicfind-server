@@ -30,6 +30,28 @@ const jobs = [
                         !set.set_type.includes('minigame') &&
                         !set.set_type.includes('memorabilia') &&
                         !set.set_type.includes('draft_innovation')
+                }).map(set => {
+                    // Trim unnecessary props
+                    const {
+                        object,
+                        code,
+                        mtgo_code,
+                        arena_code,
+                        tcgplayer_id,
+                        uri,
+                        scryfall_uri,
+                        set_type,
+                        digital,
+                        nonfoil_only,
+                        parent_set_code,
+                        foil_only,
+                        block_code,
+                        block,
+                        printed_size,
+                        ...rest
+                    } = set;
+
+                    return rest;
                 })
             }
 
@@ -38,7 +60,8 @@ const jobs = [
                 .then(() => fetchData('https://api.scryfall.com/sets', false, []))
                 .then(res => filterData(res))
                 // Write changes to file
-                .then(res => handleFiles(fs, './data', 'cardsets.json', JSON.stringify(res, null, 2), true))
+                // .then(res => handleFiles(fs, './data', 'cardsets.json', JSON.stringify(res, null, 2), true))
+                .then(res => handleFiles(fs, './data', 'cardsets.json', JSON.stringify(res), true))
                 .catch(error => { throw error })
         } catch (error) {
             throw new Error(error)

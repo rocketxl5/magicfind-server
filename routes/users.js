@@ -187,7 +187,7 @@ router.get('/collection/:userId', auth, async (req, res) => {
                 })]
         ]);
 
-        // Response with card ids and card names
+        // Response assigns array of ids and array of names to respective properties
         res.status(200).json({ card: { ids: cards.get('ids'), names: cards.get('names') } });
     }
     catch (error) {

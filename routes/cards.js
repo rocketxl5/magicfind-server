@@ -50,15 +50,24 @@ router.get('/feature', async(req, res) => {
 });
 
 // Get scryfall API card title from data/cardnames.json
-router.get('/mtg-cardnames', async (req, res) => {
+router.get('/cardnames', async (req, res) => {
   try {
-    const result = fs.readFileSync('./data/cardnames.json', { encoding: 'utf8' });
-    const cardNames = JSON.parse(result);
-    res.status(200).json(cardNames);
+    const names = fs.readFileSync('./data/cardnames.json');
+    res.status(200).json(JSON.parse(names));
   } catch (error) {
-    throw new Error('Cannot fetch card title from api cardnames file');
+    throw new Error('Could not fetch cardnames');
   }
 });
+
+router.get('/sets', async (req, res) => {
+  try {
+    const sets = fs.readFileSync('./data/cardsets.json');
+    // console.log(sets)
+    res.status(200).json(JSON.parse(sets));
+  } catch (error) {
+    throw new Error('Could not fetch cardsets');
+  }
+})
 
 // Get Secret Lair Drop card set
 router.get('/feature/:query/:iteration', async (req, res) => {
