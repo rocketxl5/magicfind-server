@@ -20,7 +20,9 @@ const SELF_URL = 'https://magicfind-server.onrender.com/';
 const dynoWaker = wokeDyno(SELF_URL);
 
 // Update card names and card sets everyday @ midnight
-new CronJob('00 00 00 * * *', () => {
+// Every sunday @ midnight
+new CronJob('0 0 0 * * *', () => {
+// new CronJob('* * * * *', () => {
     try {
         const promises = jobs.map(async job => {
             return await job();

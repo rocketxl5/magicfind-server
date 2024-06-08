@@ -62,7 +62,6 @@ router.get('/cardnames', async (req, res) => {
 router.get('/sets', async (req, res) => {
   try {
     const sets = fs.readFileSync('./data/cardsets.json');
-    // console.log(sets)
     res.status(200).json(JSON.parse(sets));
   } catch (error) {
     throw new Error('Could not fetch cardsets');

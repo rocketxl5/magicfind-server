@@ -24,15 +24,16 @@ const jobs = [
             // Returns array of cardnames excluding cards begining with A- (Arena cards)
             const filterData = async (sets) => {
                 return await sets.filter(set => {
-                    return !set.digital &&
-                        !set.set_type.includes('promo') &&
-                        !set.set_type.includes('token') &&
-                        !set.set_type.includes('minigame') &&
-                        !set.set_type.includes('memorabilia') &&
-                        !set.set_type.includes('draft_innovation')
+                    return !set.digital
+                    // !set.set_type.includes('promo') &&
+                    // !set.set_type.includes('token') &&
+                    // !set.set_type.includes('minigame') &&
+                    // !set.set_type.includes('memorabilia') &&
+                    // !set.set_type.includes('draft_innovation') &&
                 }).map(set => {
                     // Trim unnecessary props
                     const {
+                        id,
                         object,
                         code,
                         mtgo_code,
@@ -51,7 +52,7 @@ const jobs = [
                         ...rest
                     } = set;
 
-                    return rest;
+                        return { [set.id]: rest };
                 })
             }
 

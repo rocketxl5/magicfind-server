@@ -80,21 +80,25 @@ router.get('/product/name/:cardName', auth, async (req, res) => {
 });
 
 // Get catalog published card names 
-router.get('/product/names', async (req, res) => {
+router.get('/product-names', async (req, res) => {
 
   try {
-    const catalogCards = await Card.find(
-      { catalog: { $ne: [] } }
-    )
+    const names = await Card.find({ catalog: { $ne: [] } })
+      .select('card.name');
     // const data = await fsPromises.readFile('./data/cardcatalog.json', { encoding: 'utf8' });
 
-    results = catalogCards.map(card => {
-      return card.name
-    }).filter((name, index, array) => {
-      return array.indexOf(name) === index;
-    });
+    if (names.length) {
+      names = catalogCards.map(card => {
+        return card.name
+      }).filter((name, index, array) => {
+        return array.indexOf(name) === index;
+      });
+    }
 
-    res.status(200).json(results);
+    // console.log(names)
+    // console.log(result.length)
+
+    res.status(200).json(names);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -112,7 +116,7 @@ router.get('/:userID/:cardID/:quantity', auth, async (req, res) => {
       return card._id.equals(ObjectId(cardID));
     })
 
-    console.log(card)
+    // console.log(card)
 
     if (card) {
       // Check if quantity selected is available
