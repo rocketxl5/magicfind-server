@@ -23,6 +23,7 @@ const dynoWaker = wokeDyno(SELF_URL);
 // Every sunday @ midnight
 new CronJob('0 0 0 * * *', () => {
 // new CronJob('* * * * *', () => {
+
     try {
         const promises = jobs.map(async job => {
             return await job();
