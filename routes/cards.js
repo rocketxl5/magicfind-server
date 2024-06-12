@@ -9,7 +9,6 @@ const User = require('../models/User');
 const ObjectId = require('mongodb').ObjectId;
 
 const { handleFiles } = require('../helpers/handleFiles');
-const scryfall = require('../data/ALCHEMY');
 const features = require('../data/FEATURES');
 
 // Get feature cards image urls

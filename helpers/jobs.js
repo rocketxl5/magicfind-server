@@ -2,7 +2,6 @@
 // Called by cron every 5 minutes to update card name list
 const fs = require('fs');
 const axios = require('axios');
-const scryfall = require('../data/ALCHEMY');
 const { handleFiles } = require('./handleFiles');
 
 const fetchData = async (url, isFetch, results) => {
@@ -61,35 +60,25 @@ const jobs = [
                 .then(() => fetchData('https://api.scryfall.com/sets', false, []))
                 .then(res => filterData(res))
                 // Write changes to file
-                // .then(res => handleFiles(fs, './data', 'cardsets.json', JSON.stringify(res, null, 2), true))
-                .then(res => handleFiles(fs, './data', 'cardsets.json', JSON.stringify(res), true))
+                .then(res => handleFiles(fs, './data', 'cardsets.json', JSON.stringify(res), true, 'Cardsets successfully updated'))
                 .catch(error => { throw error })
         } catch (error) {
             throw new Error(error)
         }
-
     },
     // Fetch and sanitize MTG card names for Archive autocomplete
     async () => {
-        let alchemy_cardnames = []
+        let digital_card_names;
+
         try {
-            const urls = scryfall.alchemy_sets.map(set => {
-                return `https://api.scryfall.com/cards/search?include_extras=true&include_variations=true&order=set&q=e%3${set}&unique=prints`
-            })
-
-            const promises = urls.map(async (url) => {
-                const cards = []
-                let isFetch = true;
-                const data = await fetchData(url, isFetch, []);
-                return cards.push(...cards, ...data)
-            })
-            // Querying all urls returned in urls
-            Promise.all(promises)
-                .then(cards => alchemy_cardnames = cards.map(card => card.name))
-                .catch(error => { throw error })
-
+            await axios.get('https://data.scryfall.io/default-cards/default-cards-20240611210858.json')
+                .then(res => digital_card_names = res.data
+                    .filter(card => card.set_type === 'alchemy' || card.digital)
+                    .map(card => card.name)
+                )
+                .catch(error => { throw error }) 
         } catch (error) {
-            throw new Error(error);
+            throw error
         }
 
         try {
@@ -98,7 +87,7 @@ const jobs = [
 
             // Returns array of cardnames excluding cards begining with A- (Arena cards)
             const filteredCardnames = cardnames.filter(cardname => {
-                return /^(?!A-).*$/.test(cardname) && !alchemy_cardnames.includes(cardname)
+                return /^(?!A-).*$/.test(cardname) && !digital_card_names.includes(cardname)
             });
 
             const searchRedundencies = async (filteredCardnames) => {
@@ -122,11 +111,11 @@ const jobs = [
             searchRedundencies(filteredCardnames).then((found) => {
                 removeRedundencies(found, filteredCardnames).then(() => {
                     // Write changes to file
-                    handleFiles(fs, './data', 'cardnames.json', JSON.stringify(filteredCardnames), true);
+                    handleFiles(fs, './data', 'cardnames.json', JSON.stringify(filteredCardnames), true, 'Cardnames successfully updated');
                 })
             });
         } catch (error) {
-            throw new Error(error);
+            throw error;
         }
     }
 ]

@@ -1,28 +1,28 @@
-const handleFiles = (fs, directory, filename, data, async = false) => {
+const handleFiles = (fs, directory, filename, data, async = false, message) => {
     if (!fs.existsSync(directory)) {
         fs.mkdirSync(`${directory}`);
     }
     if (!async) {
-        writeToFile(fs, directory, filename, data);
+        writeToFile(fs, directory, filename, data, message);
     }
     else {
-        writeToFileAsync(fs, directory, filename, data);
+        writeToFileAsync(fs, directory, filename, data, message);
     }
 }
 
-const writeToFile = (fs, directory, filename, data) => {
+const writeToFile = (fs, directory, filename, data, message) => {
     fs.writeFileSync(`${directory}/${filename}`, data, (error) => {
         if (error) throw Error
 
-        console.log('Data was updated synchronously')
+        console.log(message)
     })
 }
 
-const writeToFileAsync = (fs, directory, filename, data) => {
+const writeToFileAsync = (fs, directory, filename, data, message) => {
     fs.writeFile(`${directory}/${filename}`, data, (error) => {
         if (error) throw Error
 
-        console.log('Data was updated asynchronously')
+        console.log(message)
 
     })
 }
