@@ -3,7 +3,6 @@
 const fs = require('fs');
 const axios = require('axios');
 const { handleFiles } = require('./handleFiles');
-const sets = require('../data/alchemy');
 
 const fetchData = async (url, isFetch, results) => {
     do {
