@@ -18,54 +18,49 @@ const fetchData = async (url, isFetch, results) => {
 
 const jobs = [
     // Fetch and filters MTG card sets
-    // async () => {
-    //     try {
-    //         // Returns array of cardnames excluding cards begining with A- (Arena cards)
-    //         const filterData = async (sets) => {
-    //             return await sets.filter(set => {
-    //                 return !set.digital
-    //                 // !set.set_type.includes('promo') &&
-    //                 // !set.set_type.includes('token') &&
-    //                 // !set.set_type.includes('minigame') &&
-    //                 // !set.set_type.includes('memorabilia') &&
-    //                 // !set.set_type.includes('draft_innovation') &&
-    //             }).map(set => {
-    //                 // Trim unnecessary props
-    //                 const {
-    //                     id,
-    //                     object,
-    //                     code,
-    //                     mtgo_code,
-    //                     arena_code,
-    //                     tcgplayer_id,
-    //                     uri,
-    //                     scryfall_uri,
-    //                     set_type,
-    //                     digital,
-    //                     nonfoil_only,
-    //                     parent_set_code,
-    //                     foil_only,
-    //                     block_code,
-    //                     block,
-    //                     printed_size,
-    //                     ...rest
-    //                 } = set;
+    async () => {
+        try {
+            await axios.get('https://api.scryfall.com/sets')
+                .then(res => {
+                    const sets = res.data.data;
+                    // console.log(sets)
+                    return sets.filter(set => {
+                        return !set.digital
+                    })
 
-    //                     return { [set.id]: rest };
-    //             })
-    //         }
-
-    //         const sets = Promise.resolve();
-    //         sets
-    //             .then(() => fetchData('https://api.scryfall.com/sets', false, []))
-    //             .then(res => filterData(res))
-    //             // Write changes to file
-    //             .then(res => handleFiles(fs, './data', 'cardsets.json', JSON.stringify(res), true, 'Cardsets successfully updated'))
-    //             .catch(error => { throw error })
-    //     } catch (error) {
-    //         throw new Error(error)
-    //     }
-    // },
+                        .map(set => {
+                            // Trim unnecessary props
+                            const {
+                                id,
+                                object,
+                                code,
+                                mtgo_code,
+                                arena_code,
+                                tcgplayer_id,
+                                uri,
+                                scryfall_uri,
+                                set_type,
+                                digital,
+                                nonfoil_only,
+                                parent_set_code,
+                                foil_only,
+                                block_code,
+                                block,
+                                printed_size,
+                                ...rest
+                            } = set;
+                            return { [set.id]: rest };
+                        })
+                }
+                )
+                // Write changes to file
+                .then(res => handleFiles(fs, './data', 'cardsets.json', JSON.stringify(res), true, 'Cardsets successfully updated'))
+                .then((res) => { return 'Cardsets successfully updated' })
+                .catch(error => { throw error })
+        } catch (error) {
+            throw new Error(error)
+        }
+    },
     // Fetch and sanitize MTG card names for Archive autocomplete
     async () => {
         try {
@@ -77,14 +72,13 @@ const jobs = [
                         // Exclude card name beginnig with A- (alchemy specific cards)
                         /^(?!A-).*$/.test(card.name) &&
                         // Exclude Gleemox (mtgo online exclusive)
-                        card.name.toLowerCase() !== 'gleemox' &&
+                    // card.name.toLowerCase() !== 'gleemox' &&
                         // Exclude card with '[year] World Champion' and '[year] World Championships Ad' titles
                         !card.name.toLowerCase().includes('world champion')
                     )
                         .map(card => card.name);
                 })
                 .then(res => {
-                    const results = res;
                     res.map((name, i) => { return { name: name, index: i } })
                         .filter(obj => { return obj.name.includes('//') })
                         .map(obj => {
@@ -97,16 +91,14 @@ const jobs = [
                         .forEach((obj, i) => {
                             const index = obj.index - i;
                             results.splice(index, 1);
-                    });
-                    return results;
-                })
-                .then(res => {
-                    return res.sort().filter((name, i) => name !== res[i - 1])
+                        })
+                        .sort().filter((name, i) => name !== res[i - 1])
                 })
                 .then((res) => {
                     console.log(res)
                     handleFiles(fs, './data', 'cardnames.json', JSON.stringify(res), true, 'Cardnames successfully updated');
                 })
+                // .then(() => { return 'Cardnames successfully updated' })
                 .catch(error => { throw error });
         } catch (error) {
             throw error
@@ -114,4 +106,4 @@ const jobs = [
     }
 ]
 
-module.exports = { jobs };
+module.exports = jobs;

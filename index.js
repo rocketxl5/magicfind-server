@@ -6,7 +6,7 @@ const connectDB = require('./config/db');
 const cors = require('cors');
 const fs = require('fs');
 const { CronJob } = require('cron');
-const { jobs } = require('./helpers/jobs.js')
+const jobs = require('./helpers/jobs.js')
 const moment = require('moment-timezone');
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -18,32 +18,6 @@ app.use(cors({ origin: '*', credentials: true }));
 const SELF_URL = 'https://magicfind-server.onrender.com/';
 
 const dynoWaker = wokeDyno(SELF_URL);
-
-// Update card names and card sets everyday @ midnight
-// Every sunday @ midnight
-new CronJob('0 0 0 * * *', () => {
-// new CronJob('* * * * *', () => {
-
-    try {
-        const promises = jobs.map(async job => {
-            return await job();
-        })
-
-        Promise.all(promises)
-            .then(res => {
-                const date = moment.tz(new Date(), 'America/Toronto').format();
-                const message = `Card list was successfuly updated: ${date}\n`;
-            // Update log file data
-            fs.appendFile('logs.txt', message, (error) => {
-                if (error) throw error
-
-                console.log('File successfully updated')
-            })
-        })
-    } catch (error) {
-        console.log(error)
-    }
-}, null, true);
 
 const usersRouter = require('./routes/users.js');
 const cardsRouter = require('./routes/cards.js');
