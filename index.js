@@ -1,4 +1,5 @@
 require('dotenv').config();
+const axios = require('axios');
 const express = require('express');
 const session = require('express-session');
 const wokeDyno = require('woke-dyno');
@@ -41,7 +42,7 @@ app.listen(PORT, () => {
 
     // Extra keep-alive ping
     setInterval(() => {
-        fetch(NEXT_HEALTH_URL)
+        axios.get(NEXT_HEALTH_URL)
             .then(() => console.log('[KEEP-ALIVE] Pinged Next.js health route'))
             .catch(err => console.error('[KEEP-ALIVE] Next.js ping failed:', err));
     }, 10 * 60 * 1000); // 10 minutes
