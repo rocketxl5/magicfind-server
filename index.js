@@ -37,13 +37,13 @@ app.use('/api/cart', cartRouter);
 app.listen(PORT, () => {
     dynoWaker.start();
     console.log(`Server started on port: ${PORT}`)
-
-    // const NEXT_HEALTH_URL = 'https://next-cms-template.onrender.com/api/health';
+    // Next.js cms template health check url
+    const NEXT_HEALTH_URL = 'https://next-cms-template.onrender.com/api/health';
 
     // Extra keep-alive ping
-    // setInterval(() => {
-    //     axios.get(NEXT_HEALTH_URL)
-    //         .then(() => console.log('[KEEP-ALIVE] Pinged Next.js health route'))
-    //         .catch(err => console.error('[KEEP-ALIVE] Next.js ping failed:', err));
-    // }, 10 * 60 * 1000); // 10 minutes
+    setInterval(() => {
+        axios.get(NEXT_HEALTH_URL)
+            .then(() => console.log('[KEEP-ALIVE] Pinged Next.js health route'))
+            .catch(err => console.error('[KEEP-ALIVE] Next.js ping failed:', err));
+    }, 10 * 60 * 1000); // 10 minutes
 });
