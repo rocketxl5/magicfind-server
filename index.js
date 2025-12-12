@@ -38,7 +38,7 @@ app.listen(PORT, () => {
     dynoWaker.start();
     console.log(`Server started on port: ${PORT}`)
     // Next.js cms template health check url
-    const NEXT_HEALTH_URL = 'https://next-cms-template.onrender.com/api/health';
+    const NEXT_HEALTH_URL = 'https://next-auth-ui.onrender.com/api/health';
 
     // Extra keep-alive ping
     setInterval(() => {
