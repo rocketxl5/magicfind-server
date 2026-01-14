@@ -18,7 +18,7 @@ app.use(cors({ origin: '*', credentials: true }));
 
 const SELF_URL = 'https://magicfind-server.onrender.com/';
 
-const dynoWaker = wokeDyno(SELF_URL);
+// const dynoWaker = wokeDyno(SELF_URL);
 
 const usersRouter = require('./routes/users.js');
 const cardsRouter = require('./routes/cards.js');
@@ -35,15 +35,15 @@ app.use('/api/catalog', catalogRouter);
 app.use('/api/cart', cartRouter);
 
 app.listen(PORT, () => {
-    dynoWaker.start();
+    // dynoWaker.start();
     console.log(`Server started on port: ${PORT}`)
     // Next.js cms template health check url
-    const NEXT_HEALTH_URL = 'https://next-auth-ui.onrender.com/api/health';
+    // const NEXT_HEALTH_URL = 'https://next-cms-template.onrender.com/api/health';
 
     // Extra keep-alive ping
-    setInterval(() => {
-        axios.get(NEXT_HEALTH_URL)
-            .then(() => console.log('[KEEP-ALIVE] Pinged Next.js health route'))
-            .catch(err => console.error('[KEEP-ALIVE] Next.js ping failed:', err));
-    }, 10 * 60 * 1000); // 10 minutes
+    // setInterval(() => {
+    //     axios.get(NEXT_HEALTH_URL)
+    //         .then(() => console.log('[KEEP-ALIVE] Pinged Next.js health route'))
+    //         .catch(err => console.error('[KEEP-ALIVE] Next.js ping failed:', err));
+    // }, 10 * 60 * 1000); // 10 minutes
 });
